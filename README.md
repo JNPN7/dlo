@@ -1,4 +1,5 @@
-![DLO](docs/images/DLO-slant.png) 
+<img src="docs/images/DLO-slant.png" alt="dlo" width="60"/>
+
 # DLO - Data Lineage Orchestrator
 
 
