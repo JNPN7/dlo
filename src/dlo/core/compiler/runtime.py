@@ -1,4 +1,5 @@
 from functools import cached_property
+from typing import Optional
 
 from dlo.adapters.factory import AdapterFactory
 from dlo.core.compiler.compiler import GraphCompiler
@@ -9,13 +10,16 @@ from dlo.core.parser.manifest import ManifestLoader
 
 
 class Runtime:
-    def __init__(self, project: Project, profile: Profile):
+    def __init__(self, project: Project, profile: Profile, manifest: Optional[Manifest] = None):
         self.project = project
         self.profile = profile
+        self._manifest = manifest
 
-    @cached_property
+    @property
     def manifest(self) -> Manifest:
-        return ManifestLoader(self.project).load()
+        if self._manifest is None:
+            self._manifest = ManifestLoader(self.project).load()
+        return self._manifest
 
     @cached_property
     def adapter(self):
@@ -27,18 +31,27 @@ class Runtime:
             **engine.to_dict(), runtime_config=self.project.runtime_config
         )
 
+    @cached_property
+    def graph_compiler(self):
+        return GraphCompiler(manifest=self.manifest, project=self.project)
+
+    @cached_property
+    def runner(self):
+        return Runner(manifest=self.manifest, adapter=self.adapter, project=self.project)
+
     def compile(self):
-        compiler = GraphCompiler(manifest=self.manifest, project=self.project)
-        compiler.compile()
+        self.graph_compiler.compile()
 
     def run(self):
         self.compile()
 
-        runner = Runner(manifest=self.manifest, adapter=self.adapter, project=self.project)
-        runner.run()
+        self.runner.run()
 
     def schedule(self):
         self.compile()
 
-        runner = Runner(manifest=self.manifest, adapter=self.adapter, project=self.project)
-        runner.schedule()
+        self.runner.schedule()
+
+    def execute_query(self, query: str):
+        result = self.runner.execute_query(query=query, graph_compiler=self.graph_compiler)
+        return result

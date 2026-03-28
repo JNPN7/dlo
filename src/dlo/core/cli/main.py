@@ -52,11 +52,9 @@ def run(ctx: click.Context, *args, **kwargs):
     click.echo("Running DLO pipeline...")
     project = ctx.obj.get("project")
     profile = ctx.obj.get("profile")
+    manifest = ctx.obj.get("cached_manifest")
 
-    # TODO: Use in very near future added to remember
-    _ = ctx.obj.get("cached_manifest")
-
-    runtime = Runtime(project=project, profile=profile)
+    runtime = Runtime(project=project, profile=profile, manifest=manifest)
     runtime.run()
 
 
@@ -71,12 +69,31 @@ def schedule(ctx: click.Context, *args, **kwargs):
     click.echo("Scheduling DLO pipeline...")
     project = ctx.obj.get("project")
     profile = ctx.obj.get("profile")
+    manifest = ctx.obj.get("cached_manifest")
 
-    # TODO: Use in very near future added to remember
-    _ = ctx.obj.get("cached_manifest")
-
-    runtime = Runtime(project=project, profile=profile)
+    runtime = Runtime(project=project, profile=profile, manifest=manifest)
     runtime.schedule()
+
+
+@cli.command("query")
+@click.pass_context
+@d.project
+@d.profile
+@d.lifespan
+@d.cached_manifest
+@click.argument('query')
+def execute_query(ctx: click.Context, *args, **kwargs):
+    """Run query."""
+    click.echo("Running the query")
+    project = ctx.obj.get("project")
+    profile = ctx.obj.get("profile")
+    manifest = ctx.obj.get("cached_manifest")
+
+    query = kwargs.get("query")
+
+    runtime = Runtime(project=project, profile=profile, manifest=manifest)
+    result = runtime.execute_query(query)
+    click.echo(result)
 
 
 @cli.command("mcp")
@@ -91,11 +108,9 @@ def mcp(ctx: click.Context, *args, **kwargs):
     click.echo("Starting MCP server...")
     project = ctx.obj.get("project")
     profile = ctx.obj.get("profile")
+    manifest = ctx.obj.get("cached_manifest")
 
-    # TODO: Use in very near future added to remember
-    _ = ctx.obj.get("cached_manifest")
-
-    runtime = Runtime(project=project, profile=profile)
+    runtime = Runtime(project=project, profile=profile, manifest=manifest)
     runtime.compile()
 
     import uvicorn

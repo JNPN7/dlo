@@ -8,6 +8,7 @@ import click
 from dlo.common.logger import setup_logger
 from dlo.core.config import Profile, Project
 from dlo.core.constants import LOG_FILE
+from dlo.core.models.manifest import Manifest
 
 LogLevels = NewType("LogLevels", Literal["info", "error", "debug"])
 
@@ -83,8 +84,15 @@ def cached_manifest(func):
         ctx = cast("click.Context", ctx)
         ctx.obj = ctx.obj or {}
 
+        project: Project = ctx.obj["project"]
+
+        manifest = None
+
         cached_manifest = kwargs.get("cached_manifest")
-        ctx.obj["cached_manifest"] = cached_manifest
+        if cached_manifest:
+            manifest = Manifest.__from_project__(project)
+
+        ctx.obj["cached_manifest"] = manifest
 
         func(ctx, *args, **kwargs)
 

@@ -182,6 +182,16 @@ class Model(BaseResource, CompiledResourceMixin, ScheduledResourceMixin):
     def __post_init__(self):
         super().__post_init__()
 
+        is_ephemeral = self.type == ModelType.ephemeral
+
+        if is_ephemeral:
+            self.details = None
+        elif self.details is None:
+            raise errors.DloCompilationError(
+                f"Details must be added with full name. For model type: {self.type} "
+                f"Invalid Model: `{self.name}` file: `{self.file_path}`"
+            )
+
         # Validate schedule cron
         if self.schedule is not None:
             if self.type != ModelType.materialized:

@@ -162,7 +162,7 @@ class DatabricksAdapter(Adapter):
 
         return data
 
-    def fetch(self):
+    def fetch(self, query: str):
         raise errors.DloFeatureNotImplementedError()
 
     def _create_table(self, model: Node):

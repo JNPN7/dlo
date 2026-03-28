@@ -1,3 +1,6 @@
+"""
+Compile the whole project generate the manifest with graph dependents and generate compilied Query
+"""
 import json
 
 from functools import cached_property

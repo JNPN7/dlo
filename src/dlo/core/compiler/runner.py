@@ -1,16 +1,22 @@
+"""
+Run the compiled project with the dependents
+"""
 import logging
 
 from functools import cached_property
 from typing import Mapping, TypeAlias
 
 from dlo.adapters.adapter import Adapter
+from dlo.common.exceptions import errors
+from dlo.core.compiler.compiler import GraphCompiler
 from dlo.core.compiler.graph import Graph
 from dlo.core.config import Project
 from dlo.core.constants import COMPILED_GRAPH_FIG_PATH_RUN
 from dlo.core.models.graph import NodeId
 from dlo.core.models.manifest import Manifest
-from dlo.core.models.resources import Model, ModelType
+from dlo.core.models.resources import InjectedCTE, Model, ModelType
 from dlo.core.models.schedule import Schedule, ScheduleNode
+from dlo.core.parser.sql_parser import SqlParser
 from dlo.core.utils.cron import clean_cron
 
 log = logging.getLogger(__name__)
@@ -132,3 +138,54 @@ class Runner:
         scheduled_jobs.save()
 
         log.info("Schedule cron nodes: %s", schedule_cron)
+
+    def compile_query(self, query: str, graph_compiler: GraphCompiler):
+        sql_parser = SqlParser(query)
+        if not sql_parser.is_only_select:
+            raise errors.InvalidRequestError("Query must be only select statements")
+
+        dependents = sql_parser.extract_table()
+
+        dependents_graph = graph_compiler.graph.subgraph(dependents)
+
+        # Get dependent ctes
+        extra_ctes = []
+        for dependent in dependents_graph.topoligical_sort:
+            node = graph_compiler.nodes[dependent]
+            if node.details is not None:
+                cte = InjectedCTE(
+                    id=node.unique_id,
+                    sql=f"{node.name} as (SELECT * FROM {node.details.full_name}\n)",
+                )
+                extra_ctes.append(cte)
+                continue
+
+            # Get cte of dependents of the node
+            filterd_node_extra_ctes = [
+                injected_cte for injected_cte in node.extra_ctes
+                if injected_cte.id not in dependents
+            ]
+            extra_ctes.extend(filterd_node_extra_ctes)
+
+            # Add cte of the node
+            extra_ctes.append(
+                InjectedCTE(id=node.unique_id, sql=f"{node.name} as ({node.raw_code})")
+            )
+
+        # Build compiled SQL
+        if extra_ctes:
+            compiled_code = (
+                "WITH " + ", \n".join(cte.sql for cte in extra_ctes) + f"\n\n{query}"
+            )
+        else:
+            compiled_code = node.raw_code
+
+        return compiled_code
+
+    def execute_query(self, query: str, graph_compiler: GraphCompiler):
+        log.info("Compiling the query")
+        compiled_code = self.compile_query(query=query, graph_compiler=graph_compiler)
+
+        log.info("Executing compiled query: %s", compiled_code)
+        data = self.adapter.execute(compiled_code)
+        return data
