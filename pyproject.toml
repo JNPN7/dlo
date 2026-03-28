@@ -15,6 +15,7 @@ dependencies = [
     "pydantic>=2.12.5",
     "pyyaml>=6.0.3",
     "mashumaro",
+    "networkx>=3.4.2",
 ]
 
 [dependency-groups]
@@ -23,6 +24,7 @@ dev = [
     "ruff",
     "pytest-asyncio",
     "lefthook>=2.0.15",
+    "matplotlib>=3.10.8",
 ]
 test = [
   "pytest",

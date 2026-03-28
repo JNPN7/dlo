@@ -2,7 +2,7 @@ import click
 
 import dlo.core.cli.decorators as d
 
-from dlo.core.parser.manifest import ManifestLoader
+from dlo.core.compiler.runtime import Runtime
 
 
 @click.group(
@@ -35,9 +35,9 @@ def run(ctx: click.Context, *args, **kwargs):
     click.echo("Running DLO pipeline...")
     project = ctx.obj.get("project")
     profile = ctx.obj.get("profile")
-    manifest = ManifestLoader(project).load()
-    print(manifest)
-    print(profile)
+
+    runtime = Runtime(project=project, profile=profile)
+    runtime.compile()
 
 
 if __name__ == "__main__":

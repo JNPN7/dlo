@@ -216,4 +216,4 @@ __marimo__/
 .streamlit/secrets.toml
 
 # Project Local
-.project
+.project*

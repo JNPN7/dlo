@@ -20,8 +20,9 @@ import yaml
 
 from dlo.common.exceptions import errors
 from dlo.core.config import Project
+from dlo.core.constants import PARSE_DIRECTORIES_IGNORE
 from dlo.core.models.manifest import Manifest
-from dlo.core.models.resources import Resource
+from dlo.core.models.resources import Code, Model, Resource, ResourceTypes
 
 # Configure module logger
 logger = logging.getLogger(__name__)
@@ -77,11 +78,15 @@ class FileReaderFromFileSystem:
         _files: List[str] = []
 
         # Walk through the directory structure and collect file paths
-        for root, _, fs in os.walk(self.root_dir):
+        for root, dirs, fs in os.walk(self.root_dir):
+            # Exlude root dirs
+            if root == self.root_dir:
+                dirs[:] = [d for d in dirs if d not in PARSE_DIRECTORIES_IGNORE]
+
             for file in fs:
                 file_path = os.path.join(root, file)
                 _files.append(file_path)
-                logger.debug("Found file: %s", file_path)
+                print("Found file: %s", file_path)
 
         self._files = _files
         logger.info("Completed file scan. Found %d files in %s", len(_files), self.root_dir)
@@ -101,6 +106,39 @@ class FileReaderFromFileSystem:
             logger.debug("Files not yet loaded, triggering get_files()")
             self.get_files()
         return self._files  # type: ignore[return-value]
+
+    def yaml_files(self) -> List[str]:
+        """
+        Filter the list of files to include only YAML files.
+
+        Returns:
+            List[str]: A list of file paths that have .yaml or .yml extensions.
+
+        Example:
+            >>> reader = FileReaderFromFileSystem("/project")
+            >>> yaml_files = reader.filter_yaml_files()
+        """
+        yaml_files = [f for f in self.files if f.endswith((".yaml", ".yml"))]
+        logger.debug(
+            "Filtered %d YAML files from %d total files", len(yaml_files), len(self.files)
+        )
+        return yaml_files
+
+    @property
+    def sql_files(self) -> List[str]:
+        """
+        Filter the list of files to include only SQL files.
+
+        Returns:
+            List[str]: A list of file paths that have .sql extension.
+
+        Example:
+            >>> reader = FileReaderFromFileSystem("/project")
+            >>> sql_files = reader.filter_sql_files()
+        """
+        sql_files = [f for f in self.files if f.endswith(".sql")]
+        logger.debug("Filtered %d SQL files from %d total files", len(sql_files), len(self.files))
+        return sql_files
 
     @staticmethod
     def read_yaml(file_path: str | Path) -> dict:
@@ -168,38 +206,6 @@ class FileReaderFromFileSystem:
                 data={"file": str(file_path), "error": str(exc)},
             )
 
-    def filter_yaml_files(self) -> List[str]:
-        """
-        Filter the list of files to include only YAML files.
-
-        Returns:
-            List[str]: A list of file paths that have .yaml or .yml extensions.
-
-        Example:
-            >>> reader = FileReaderFromFileSystem("/project")
-            >>> yaml_files = reader.filter_yaml_files()
-        """
-        yaml_files = [f for f in self.files if f.endswith((".yaml", ".yml"))]
-        logger.debug(
-            "Filtered %d YAML files from %d total files", len(yaml_files), len(self.files)
-        )
-        return yaml_files
-
-    def filter_sql_files(self) -> List[str]:
-        """
-        Filter the list of files to include only SQL files.
-
-        Returns:
-            List[str]: A list of file paths that have .sql extension.
-
-        Example:
-            >>> reader = FileReaderFromFileSystem("/project")
-            >>> sql_files = reader.filter_sql_files()
-        """
-        sql_files = [f for f in self.files if f.endswith(".sql")]
-        logger.debug("Filtered %d SQL files from %d total files", len(sql_files), len(self.files))
-        return sql_files
-
 
 class ManifestLoader:
     """
@@ -232,6 +238,21 @@ class ManifestLoader:
         self.project = project
         self.manifest = Manifest()
 
+    def _check_if_name_already_exists(
+        self, file_path: Path, name: str, resource_type: ResourceTypes
+    ):
+        resources = getattr(self.manifest, resource_type)
+        resource_of_name = resources.get(name)
+        if resource_of_name is None:
+            return
+
+        raise errors.DloCompilationError(
+            f"Found multiple models with name `{name}`.\n"
+            "To fix this please change name for one these resource.\n"
+            f"({file_path})\n"
+            f"({resource_of_name.path})\n"
+        )
+
     def parse_yaml_file(self, file_path: Path) -> None:
         """
         Parse a YAML file and populate the manifest with resources.
@@ -251,7 +272,12 @@ class ManifestLoader:
             ValidationError: If a resource fails model validation.
         """
         logger.info("Parsing YAML file: %s", file_path)
-        data = FileReaderFromFileSystem.read_yaml(file_path)
+        try:
+            data = FileReaderFromFileSystem.read_yaml(file_path) or {}
+        except Exception as exc:
+            raise errors.DloParseError(f"Failed to parse YAML file {file_path}") from exc
+
+        file_path_str = file_path.absolute().as_posix()
 
         # Iterate over each resource type defined in the YAML file
         for resource_type, resource_data in data.items():
@@ -265,13 +291,37 @@ class ManifestLoader:
                 )
                 continue
 
-            # Validate and add each resource to the manifest
-            for d in resource_data:
-                d["file_path"] = file_path.absolute().as_posix()
-                validated_data = resource_model.from_dict(d)
+            if not isinstance(resource_data, list):
+                logger.warning(
+                    "Expected list for resource type '%s' in file %s, skipping",
+                    resource_type,
+                    file_path,
+                )
+                continue
 
-                resource = getattr(self.manifest, resource_type)
-                resource[validated_data.name] = validated_data
+            manifest_resource = getattr(self.manifest, resource_type)
+
+            # Validate and add each resource to the manifest
+            for raw_resource in resource_data:
+                resource_dict = {**raw_resource, "file_path": file_path_str}
+                validated_data = resource_model.from_dict(resource_dict)
+
+                # Handle Model-specific logic
+                if resource_model is Model:
+                    code = self.manifest.code.get(validated_data.name)
+                    if code is None:
+                        raise errors.DloCompilationError(
+                            f"Sql file not found for model `{validated_data.name}`"
+                        )
+                    validated_data.raw_code = code.code
+                    validated_data.code_path = code.path
+
+                self._check_if_name_already_exists(
+                    validated_data.file_path, validated_data.name, resource_type
+                )
+
+                manifest_resource[validated_data.name] = validated_data
+
                 logger.debug(
                     "Added resource '%s' of type '%s' to manifest",
                     validated_data.name,
@@ -292,9 +342,15 @@ class ManifestLoader:
             as a string for consistent key types.
         """
         logger.info("Parsing SQL file: %s", file_path)
+        name = file_path.stem
+        self._check_if_name_already_exists(file_path, name, ResourceTypes.code)
+
         sql = FileReaderFromFileSystem.read_file(file_path)
+        absolute_file_path = file_path.absolute().as_posix()
+
         # Store SQL content using string path as key for consistency
-        self.manifest.sql[str(file_path)] = sql
+        self.manifest.code[name] = Code(name=name, path=absolute_file_path, code=sql)
+
         logger.debug("Added SQL file to manifest: %s (%d characters)", file_path, len(sql))
 
     def parse_files(self, file_path: Path) -> None:
@@ -354,16 +410,17 @@ class ManifestLoader:
         parsed_count = 0
         skipped_count = 0
 
+        for file in reader.sql_files:
+            file_path = Path(file)
+            self.parse_files(file_path)
+
         for file in reader.files:
             file_path = Path(file)
 
-            # Check if file has a supported extension before parsing
-            if file_path.suffix in (".yaml", ".yml", ".sql"):
-                logger.debug("Parsing file: %s", file)
-                self.parse_files(file_path)
-                parsed_count += 1
-            else:
-                skipped_count += 1
+            # Skipping as already read in first run
+            if file_path.suffix in (".sql"):
+                continue
+            self.parse_files(file_path)
 
         logger.info("Finished parsing files. Parsed: %d, Skipped: %d", parsed_count, skipped_count)
         logger.debug("Final manifest state: %s", self.manifest)

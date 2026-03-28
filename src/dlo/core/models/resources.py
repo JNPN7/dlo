@@ -11,11 +11,17 @@ from dlo.common.schema import EnumBase, SchemaMixin
 # =========================
 
 
-class ResourceTypes(EnumBase):
+class NodeResourceTypes(EnumBase):
     source = auto()
     model = auto()
+
+
+class ResourceTypes(EnumBase):
     relationship = auto()
     metric = auto()
+    source = NodeResourceTypes.source
+    model = NodeResourceTypes.model
+    code = auto()
 
 
 class ColumnCategory(EnumBase):
@@ -35,19 +41,53 @@ class ModelType(EnumBase):
     # incremental = auto()
 
 
+class CodeType(EnumBase):
+    sql = auto()
+
 # =========================
 # Base Models
 # =========================
 
 
-@dataclass
+@dataclass(kw_only=True)
 class BaseResource(SchemaMixin):
     name: str
     file_path: str
     resource_type: ResourceTypes
     description: str
-    tags: Optional[list[str]] = None
-    uuid: str = field(default_factory=lambda: str(uuid.uuid4()))
+    tags: Optional[list[str]] = field(default=None)
+    # TODO: Please don't use uuid generate properly, it hard to make track for human
+    unique_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+
+
+# =========================
+# Model Mixins
+# =========================
+
+@dataclass
+class DependsOn(SchemaMixin):
+    nodes: list[str] = field(default_factory=list)
+
+    def add_node(self, value: str):
+        if value not in self.nodes:
+            self.nodes.append(value)
+
+
+@dataclass
+class InjectedCTE(SchemaMixin):
+    id: str
+    sql: str
+
+
+@dataclass
+class CompiledResourceMixin(SchemaMixin):
+    sources: list[str] = field(default_factory=list)
+    compiled_path: Optional[str] = field(default=None)
+    compiled_code: Optional[str] = field(default=None)
+    compiled: bool = field(default=False)
+    depends_on: DependsOn = field(default_factory=DependsOn)
+    # contains ctes for all dependents
+    extra_ctes: list[InjectedCTE] = field(default_factory=list)
 
 
 # =========================
@@ -57,20 +97,20 @@ class BaseResource(SchemaMixin):
 
 @dataclass
 class ProfilingMetrics(SchemaMixin):
-    count: Optional[int] = None
-    null_count: Optional[int] = None
-    distinct_count: Optional[int] = None
+    count: Optional[int] = field(default=None)
+    null_count: Optional[int] = field(default=None)
+    distinct_count: Optional[int] = field(default=None)
 
 
 @dataclass
 class Column(SchemaMixin):
     name: str
     type: str
-    category: Optional[ColumnCategory] = None
-    description: Optional[str] = None
-    tags: Optional[list[str]] = None
-    profiling_metrics: Optional[ProfilingMetrics] = None
-    sample_data: Optional[list[str | int | float]] = None
+    category: Optional[ColumnCategory] = field(default=None)
+    description: Optional[str] = field(default=None)
+    tags: Optional[list[str]] = field(default=None)
+    profiling_metrics: Optional[ProfilingMetrics] = field(default=None)
+    sample_data: Optional[list[str | int | float]] = field(default=None)
 
 
 # =========================
@@ -81,20 +121,24 @@ class Column(SchemaMixin):
 @dataclass
 class SourceDetails(SchemaMixin):
     full_name: str
-    type: StorageType
+    type: StorageType = field(default=StorageType.table)
 
 
-@dataclass
-class Source(SchemaMixin):
+@dataclass(kw_only=True)
+class Source(BaseResource):
     name: str
     details: SourceDetails
-    columns: list[Column]
-    resource_type: ResourceTypes = ResourceTypes.source
-    description: Optional[str] = None
-    tags: Optional[list[str]] = None
-    connection: Optional[str] = None
-    primary_key: Optional[list[str]] = None
-    unique_keys: Optional[list[list[str]]] = None
+    columns: list[Column] = field(default_factory=list)
+    resource_type: ResourceTypes = field(default=ResourceTypes.source)
+    description: Optional[str] = field(default=None)
+    tags: Optional[list[str]] = field(default=None)
+    connection: Optional[str] = field(default=None)
+    primary_key: Optional[list[str]] = field(default=None)
+    unique_keys: Optional[list[list[str]]] = field(default=None)
+
+    @property
+    def relation_name(self):
+        return self.details.full_name
 
 
 # =========================
@@ -104,22 +148,24 @@ class Source(SchemaMixin):
 
 @dataclass
 class ModelDetails(SchemaMixin):
-    full_name: str
-    type: StorageType
+    full_name: Optional[str] = field(default=None)
+    type: StorageType = field(default=StorageType.table)
 
 
-@dataclass
-class Model(SchemaMixin):
+@dataclass(kw_only=True)
+class Model(BaseResource, CompiledResourceMixin):
     name: str
     type: ModelType
-    columns: list[Column]
-    resource_type: ResourceTypes = ResourceTypes.model
-    description: Optional[str] = None
-    tags: Optional[list[str]] = None
-    details: Optional[ModelDetails] = None
-    schedule: Optional[str] = None
-    primary_key: Optional[list[str]] = None
-    unique_keys: Optional[list[list[str]]] = None
+    columns: list[Column] = field(default_factory=list)
+    resource_type: ResourceTypes = field(default=ResourceTypes.model)
+    description: Optional[str] = field(default=None)
+    tags: Optional[list[str]] = field(default=None)
+    details: Optional[ModelDetails] = field(default=None)
+    schedule: Optional[str] = field(default=None)
+    primary_key: Optional[list[str]] = field(default=None)
+    unique_keys: Optional[list[list[str]]] = field(default=None)
+    raw_code: Optional[str] = field(default=None)
+    code_path: Optional[str] = field(default=None)
 
 
 # =========================
@@ -127,15 +173,15 @@ class Model(SchemaMixin):
 # =========================
 
 
-@dataclass
-class Relationship(SchemaMixin):
+@dataclass(kw_only=True)
+class Relationship(BaseResource):
     name: str
     from_: str = field(metadata={"alias": "from"})
     to: str
     from_columns: list[str]
     to_columns: list[str]
-    resource_type: ResourceTypes = ResourceTypes.relationship
-    description: Optional[str] = None
+    resource_type: ResourceTypes = field(default=ResourceTypes.relationship)
+    description: Optional[str] = field(default=None)
 
 
 # =========================
@@ -143,12 +189,24 @@ class Relationship(SchemaMixin):
 # =========================
 
 
-@dataclass
-class Metric(SchemaMixin):
+@dataclass(kw_only=True)
+class Metric(BaseResource):
     name: str
     expression: str
-    resource_type: ResourceTypes = ResourceTypes.metric
-    description: Optional[str] = None
+    resource_type: ResourceTypes = field(default=ResourceTypes.metric)
+    description: Optional[str] = field(default=None)
+
+# =========================
+# Sql
+# =========================
+
+
+@dataclass(kw_only=True)
+class Code():
+    name: str
+    path: str
+    code: str
+    type: CodeType = field(default=CodeType.sql)
 
 
 # =========================

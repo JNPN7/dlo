@@ -3,7 +3,6 @@ from enum import StrEnum
 
 from mashumaro.mixins.json import DataClassJSONMixin
 from mashumaro.types import SerializableType
-from pydantic import BaseModel, ConfigDict
 
 
 class EnumBase(SerializableType, StrEnum):
@@ -52,13 +51,3 @@ class EnumBase(SerializableType, StrEnum):
 @dataclass
 class SchemaMixin(DataClassJSONMixin):
     ...
-
-
-class SchemaBase(BaseModel):
-    """Base model configuration"""
-
-    model_config = ConfigDict(
-        extra="ignore",
-        use_enum_values=True,
-        validate_by_name=True,
-    )
