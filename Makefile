@@ -21,3 +21,6 @@ lint-fix:
 
 format:
 	uv run ruff format
+
+build:
+	uv build

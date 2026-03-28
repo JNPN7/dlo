@@ -178,7 +178,7 @@ class Runner:
                 "WITH " + ", \n".join(cte.sql for cte in extra_ctes) + f"\n\n{query}"
             )
         else:
-            compiled_code = node.raw_code
+            compiled_code = query
 
         return compiled_code
 
