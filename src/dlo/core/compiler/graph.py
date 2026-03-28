@@ -1,3 +1,5 @@
+from typing import Iterable, Optional
+
 import networkx as nx
 
 from dlo.core.models.graph import Node, NodeId, NodeMap
@@ -7,8 +9,11 @@ from dlo.core.models.resources import (
 
 
 class Graph:
-    def __init__(self):
-        self.graph: nx.DiGraph = nx.DiGraph()
+    def __init__(self, graph: Optional[nx.DiGraph] = None):
+        if graph is None:
+            graph = nx.DiGraph()
+
+        self.graph: nx.DiGraph = graph
 
     def add_node(self, node_id: NodeId):
         self.graph.add_node(node_id)
@@ -46,23 +51,25 @@ class Graph:
         return self.graph.predecessors(node_id)
 
     def draw_layer(self, nodes: NodeMap, x_gap=2.0, y_gap=2.0, figure_name="dag_layered.png"):
+        import matplotlib.patches as mpatches
+        import matplotlib.pyplot as plt
+        import matplotlib.transforms as transforms
+        import networkx as nx
+
         layers = self.layers
         pos = {}
 
-        # Calculate dynamic figure size based on graph structure
         max_layer_size = max(len(layer) for layer in layers) if layers else 0
         num_layers = len(layers)
 
-        # Heuristic for figure size (in inches)
         width = max(12, num_layers * 2.5)
         height = max(8, max_layer_size * 1.2)
 
-        import matplotlib.patches as mpatches
-        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(width, height))
 
-        plt.figure(figsize=(width, height))
-
-        # Calculate positions centering each layer vertically
+        # ------------------------
+        # Calculate positions
+        # ------------------------
         for layer_idx, layer in enumerate(layers):
             x = layer_idx * x_gap
             layer_height = (len(layer) - 1) * y_gap
@@ -72,6 +79,9 @@ class Graph:
                 y = y_start - i * y_gap
                 pos[node] = (x, y)
 
+        # ------------------------
+        # Node Colors
+        # ------------------------
         NODE_COLOR_MAP = {
             "source": "#60A5FA",
             "ephemeral": "#22D3EE",
@@ -80,10 +90,9 @@ class Graph:
         }
 
         def get_node_type(node: Node):
-
             if node.resource_type == ResourceTypes.source:
-                return ResourceTypes.source
-            return node.type
+                return "source"
+            return str(node.type)
 
         node_color = []
         for node in self.graph.nodes:
@@ -94,65 +103,75 @@ class Graph:
             else:
                 node_color.append("#cccccc")
 
-        # Draw edges
+        # ------------------------
+        # Draw edges & nodes
+        # ------------------------
         nx.draw_networkx_edges(
             self.graph,
             pos,
+            ax=ax,
             arrows=True,
             arrowstyle="-|>",
             arrowsize=20,
             edge_color="#aaaaaa",
             connectionstyle="arc3,rad=0.1",
-            node_size=2000,
         )
 
-        labels = {unique_id: node.name for unique_id, node in nodes.items()}
-
-        # Draw nodes
         nx.draw_networkx_nodes(
             self.graph,
             pos,
+            ax=ax,
             node_color=node_color,
             node_size=2000,
             edgecolors="white",
             linewidths=2,
         )
 
-        # Draw labels below nodes to avoid center placement
-        # Offset depends on y scale, 0.25 is heuristic based on y_gap=1.5
-        label_pos = {node: (coords[0], coords[1] - 0.25) for node, coords in pos.items()}
+        # ------------------------
+        # Draw Labels (Pixel-based offset)
+        # ------------------------
+        labels = {unique_id: node.name for unique_id, node in nodes.items()}
 
-        nx.draw_networkx_labels(
-            self.graph,
-            label_pos,
-            labels=labels,
-            font_size=9,
-            font_family="sans-serif",
-            font_weight="bold",
-            verticalalignment="top",
-            bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="none", alpha=0.7),
-        )
+        for node, (x, y) in pos.items():
+            if node in labels:
+                # Offset 15 pixels downward
+                text_transform = transforms.offset_copy(
+                    ax.transData, fig=fig, x=0, y=-25, units='points'
+                )
+
+                ax.text(
+                    x,
+                    y,
+                    labels[node],
+                    transform=text_transform,
+                    ha="center",
+                    va="top",
+                    fontsize=9,
+                    fontweight="bold",
+                    bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="none", alpha=0.7),
+                )
 
         # ------------------------
-        # Add Legend
+        # Legend
         # ------------------------
         legend_handles = [
-            mpatches.Patch(
-                color=NODE_COLOR_MAP[node_type],
-                label=str(node_type).capitalize(),
-            )
-            for node_type in NODE_COLOR_MAP
+            mpatches.Patch(color=color, label=node_type.capitalize())
+            for node_type, color in NODE_COLOR_MAP.items()
         ]
 
-        if legend_handles:
-            plt.legend(
-                handles=legend_handles,
-                loc="upper right",
-                frameon=True,
-                title="Node Types",
-            )
+        ax.legend(
+            handles=legend_handles,
+            loc="upper right",
+            frameon=True,
+            title="Node Types",
+        )
 
-        plt.axis("off")
+        ax.set_axis_off()
         plt.tight_layout()
         plt.savefig(figure_name, dpi=300, bbox_inches="tight")
         plt.close()
+
+    def subgraph(self, nodes: Iterable[NodeId]) -> "Graph":
+        # Take the original networkx graph and return a subgraph containing only
+        # the selected unique_id nodes.
+        return Graph(self.graph.subgraph(nodes))

@@ -2,6 +2,9 @@ from dataclasses import dataclass, field
 from enum import auto
 from typing import Optional
 
+from quartz_cron_checker import QuartzCronChecker
+
+from dlo.common.exceptions import errors
 from dlo.common.schema import EnumBase, SchemaMixin
 
 # =========================
@@ -94,6 +97,10 @@ class CompiledResourceMixin(SchemaMixin):
     extra_ctes: list[InjectedCTE] = field(default_factory=list)
 
 
+@dataclass
+class ScheduledResourceMixin(SchemaMixin):
+    schedule_depends_on: DependsOn = field(default_factory=DependsOn)
+
 # =========================
 # Shared Models
 # =========================
@@ -157,7 +164,7 @@ class ModelDetails(SchemaMixin):
 
 
 @dataclass(kw_only=True)
-class Model(BaseResource, CompiledResourceMixin):
+class Model(BaseResource, CompiledResourceMixin, ScheduledResourceMixin):
     name: str
     type: ModelType
     columns: list[Column] = field(default_factory=list)
@@ -170,6 +177,27 @@ class Model(BaseResource, CompiledResourceMixin):
     unique_keys: Optional[list[list[str]]] = field(default=None)
     raw_code: Optional[str] = field(default=None)
     code_path: Optional[str] = field(default=None)
+
+    def __post_init__(self):
+        super().__post_init__()
+
+        # Validate schedule cron
+        if self.schedule is not None:
+            if self.type != ModelType.materialized:
+                raise errors.DloCompilationError(
+                    f"Only materiazlied model can be scheduled. Invalid Model: `{self.name}` file: `{self.file_path}`"  # noqa: E501
+                )
+            err_msg = f"Invalid cron expression for Model: `{self.name}` file: `{self.file_path}`"
+            try:
+                cron_checker = QuartzCronChecker.from_cron_string(self.schedule)
+                if not cron_checker.validate():
+                    raise errors.DloCompilationError(
+                        err_msg
+                    )
+            except Exception as e:
+                raise errors.DloCompilationError(
+                    f"{err_msg}\nMessage: {e}"
+                )
 
 
 # =========================

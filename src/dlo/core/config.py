@@ -15,6 +15,7 @@ class Project(SchemaMixin):
     version: str
     profile: str
     memory: Optional[list[str]] = None
+    runtime_config: dict = field(default_factory=dict)
 
     @classmethod
     def __from_project_root__(cls, project_root: str):

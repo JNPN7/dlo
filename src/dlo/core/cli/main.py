@@ -60,5 +60,24 @@ def run(ctx: click.Context, *args, **kwargs):
     runtime.run()
 
 
+@cli.command("schedule")
+@click.pass_context
+@d.project
+@d.profile
+@d.lifespan
+@d.cached_manifest
+def schedule(ctx: click.Context, *args, **kwargs):
+    """Schedule the DLO pipeline."""
+    click.echo("Scheduling DLO pipeline...")
+    project = ctx.obj.get("project")
+    profile = ctx.obj.get("profile")
+
+    # TODO: Use in very near future added to remember
+    _ = ctx.obj.get("cached_manifest")
+
+    runtime = Runtime(project=project, profile=profile)
+    runtime.schedule()
+
+
 if __name__ == "__main__":
     cli()

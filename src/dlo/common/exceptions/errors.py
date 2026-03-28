@@ -160,4 +160,3 @@ if __name__ == "__main__":
             "id": 1,
             "error": to_error_dict(e),
         }
-        print(response)

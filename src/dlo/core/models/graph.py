@@ -1,4 +1,4 @@
-from typing import NewType, TypeAlias
+from typing import Mapping, NewType, TypeAlias
 
 from dlo.core.models.resources import Model, Source
 
@@ -16,4 +16,4 @@ Node: TypeAlias = Model | Source
 
 NodeId = NewType("NodeId", str)
 
-NodeMap: TypeAlias = dict[NodeId, Node]
+NodeMap: TypeAlias = Mapping[NodeId, Node]

@@ -7,7 +7,7 @@ from typing import Literal, Mapping, Optional
 from dlo.common.exceptions import errors
 from dlo.core.compiler.graph import Graph
 from dlo.core.config import Project
-from dlo.core.constants import COMPILED_GRAPH_FIG_PATH_NODES, MANIFEST_FILE_NAME, TARGET_DIR
+from dlo.core.constants import COMPILED_GRAPH_FIG_PATH_NODES, TARGET_DIR
 from dlo.core.models.graph import NodeId, NodeMap
 from dlo.core.models.manifest import Manifest
 from dlo.core.models.resources import (
@@ -98,7 +98,7 @@ class GraphCompiler:
 
     def get_dependents_of_nodes(self):
         dependents: Mapping[NodeId, list[str]] = {}
-        for node_unique_id, node in self.nodes.items():
+        for node in self.nodes.values():
             # We requires dependent of model only as source don't have dependents
             if not isinstance(node, Model):
                 continue
@@ -106,7 +106,7 @@ class GraphCompiler:
             sql_parser = SqlParser(node.raw_code)
             dependent = sql_parser.extract_table()
 
-            dependents[node_unique_id] = dependent
+            dependents[node.unique_id] = dependent
 
         return dependents
 
@@ -198,21 +198,8 @@ class GraphCompiler:
             f.write(model.compiled_code)
         return compiled_path
 
-    def write_manifest(self):
-        path = self.project_root_path
-
-        target_path = path / TARGET_DIR
-        target_path.mkdir(parents=True, exist_ok=True)
-
-        manifest_path = target_path / MANIFEST_FILE_NAME
-
-        with open(manifest_path, "w", encoding="utf-8") as f:
-            f.write(self.manifest.to_json())
-
     def compile(self):
         self.draw_layer()
 
         for node_unique_id in self.graph.topoligical_sort:
             self.compile_node(node_unique_id)
-
-        self.write_manifest()

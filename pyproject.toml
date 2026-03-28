@@ -17,6 +17,7 @@ dependencies = [
     "mashumaro",
     "networkx>=3.4.2",
     "sqlglot>=29.0.1",
+    "quartz-cron-checker>=0.2.1",
 ]
 
 [dependency-groups]
@@ -32,6 +33,7 @@ lint = [
   "ruff",
 ]
 databricks = [
+  "databricks-sdk>=0.94.0",
   "databricks-sql-connector>=4.2.3",
 ]
 
