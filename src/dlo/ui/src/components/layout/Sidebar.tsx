@@ -29,7 +29,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 px-6">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg">
-          <img src='/favicon.svg' className="h-6 w-6 text-primary-foreground" />
+          <img src='/assets/favicon.svg' className="h-6 w-6 text-primary-foreground" />
         </div>
         <span className="text-xl font-bold text-sidebar-foreground">DLO</span>
       </div>
@@ -59,10 +59,10 @@ export function Sidebar() {
       <ScrollArea className="flex-1 px-4 py-4">
         <nav className="flex flex-col gap-1">
           {navigation.map((item) => {
-            const isActive = item.href === '/' 
+            const isActive = item.href === '/'
               ? location.pathname === '/'
               : location.pathname.startsWith(item.href);
-            
+
             return (
               <Link
                 key={item.name}
