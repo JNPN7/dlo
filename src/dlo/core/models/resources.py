@@ -54,6 +54,7 @@ class BaseResource(SchemaMixin):
 # Shared Models
 # =========================
 
+
 @dataclass
 class ProfilingMetrics(SchemaMixin):
     count: Optional[int] = None
@@ -76,6 +77,7 @@ class Column(SchemaMixin):
 # Source Models
 # =========================
 
+
 @dataclass
 class SourceDetails(SchemaMixin):
     full_name: str
@@ -85,19 +87,20 @@ class SourceDetails(SchemaMixin):
 @dataclass
 class Source(SchemaMixin):
     name: str
+    details: SourceDetails
+    columns: list[Column]
     resource_type: ResourceTypes = ResourceTypes.source
     description: Optional[str] = None
     tags: Optional[list[str]] = None
-    details: SourceDetails
     connection: Optional[str] = None
     primary_key: Optional[list[str]] = None
     unique_keys: Optional[list[list[str]]] = None
-    columns: list[Column]
 
 
 # =========================
 # Model (Semantic / Transform)
 # =========================
+
 
 @dataclass
 class ModelDetails(SchemaMixin):
@@ -108,29 +111,30 @@ class ModelDetails(SchemaMixin):
 @dataclass
 class Model(SchemaMixin):
     name: str
+    type: ModelType
+    columns: list[Column]
     resource_type: ResourceTypes = ResourceTypes.model
     description: Optional[str] = None
     tags: Optional[list[str]] = None
-    type: ModelType
     details: Optional[ModelDetails] = None
     schedule: Optional[str] = None
     primary_key: Optional[list[str]] = None
     unique_keys: Optional[list[list[str]]] = None
-    columns: list[Column]
 
 
 # =========================
 # Relationships
 # =========================
 
+
 @dataclass
 class Relationship(SchemaMixin):
     name: str
-    resource_type: ResourceTypes = ResourceTypes.relationship
     from_: str = field(metadata={"alias": "from"})
     to: str
     from_columns: list[str]
     to_columns: list[str]
+    resource_type: ResourceTypes = ResourceTypes.relationship
     description: Optional[str] = None
 
 
@@ -138,11 +142,12 @@ class Relationship(SchemaMixin):
 # Metrics
 # =========================
 
+
 @dataclass
 class Metric(SchemaMixin):
     name: str
-    resource_type: ResourceTypes = ResourceTypes.metric
     expression: str
+    resource_type: ResourceTypes = ResourceTypes.metric
     description: Optional[str] = None
 
 
@@ -150,13 +155,9 @@ class Metric(SchemaMixin):
 # Resource Factory
 # =========================
 
+
 class Resource:
-    model_factory = {
-        'models': Model,
-        'relationships': Relationship,
-        'sources': Source,
-        'metrics': Metric
-    }
+    model_factory = {"models": Model, "relationships": Relationship, "sources": Source, "metrics": Metric}
 
     def create_resource(self, resouce_type: str, data: dict):
         model_cls = self.model_factory.get(resouce_type.lower())
