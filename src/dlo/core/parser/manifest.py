@@ -132,7 +132,7 @@ class FileReaderFromFileSystem:
             logger.error("Failed to parse YAML file %s: %s", file_path, exc)
             raise errors.DloParseError(
                 message=f"Failed to parse YAML file '{file_path}': {exc}",
-                data={"file": str(file_path), "error": str(exc)}
+                data={"file": str(file_path), "error": str(exc)},
             )
 
     @staticmethod
@@ -165,7 +165,7 @@ class FileReaderFromFileSystem:
             logger.error("Failed to read file %s: %s", file_path, exc)
             raise errors.DloParseError(
                 message=f"Failed to read file '{file_path}': {exc}",
-                data={"file": str(file_path), "error": str(exc)}
+                data={"file": str(file_path), "error": str(exc)},
             )
 
     def filter_yaml_files(self) -> List[str]:
@@ -180,7 +180,9 @@ class FileReaderFromFileSystem:
             >>> yaml_files = reader.filter_yaml_files()
         """
         yaml_files = [f for f in self.files if f.endswith((".yaml", ".yml"))]
-        logger.debug("Filtered %d YAML files from %d total files", len(yaml_files), len(self.files))
+        logger.debug(
+            "Filtered %d YAML files from %d total files", len(yaml_files), len(self.files)
+        )
         return yaml_files
 
     def filter_sql_files(self) -> List[str]:
@@ -259,9 +261,7 @@ class ManifestLoader:
             # Skip unknown resource types
             if resource_model is None:
                 logger.warning(
-                    "Unknown resource type '%s' in file %s, skipping",
-                    resource_type,
-                    file_path
+                    "Unknown resource type '%s' in file %s, skipping", resource_type, file_path
                 )
                 continue
 
@@ -275,7 +275,7 @@ class ManifestLoader:
                 logger.debug(
                     "Added resource '%s' of type '%s' to manifest",
                     validated_data.name,
-                    resource_type
+                    resource_type,
                 )
 
         logger.info("Successfully parsed YAML file: %s", file_path)
@@ -316,7 +316,7 @@ class ManifestLoader:
         mapper = {
             ".yaml": self.parse_yaml_file,
             ".yml": self.parse_yaml_file,
-            ".sql": self.parse_sql_file
+            ".sql": self.parse_sql_file,
         }
 
         parse_func = mapper.get(file_path.suffix)
@@ -347,9 +347,7 @@ class ManifestLoader:
         reader = FileReaderFromFileSystem(self.project.project_root)
 
         logger.info(
-            "Found %d files in project directory: %s",
-            len(reader.files),
-            self.project.project_root
+            "Found %d files in project directory: %s", len(reader.files), self.project.project_root
         )
 
         # Iterate over all files and parse them based on their type
@@ -367,11 +365,7 @@ class ManifestLoader:
             else:
                 skipped_count += 1
 
-        logger.info(
-            "Finished parsing files. Parsed: %d, Skipped: %d",
-            parsed_count,
-            skipped_count
-        )
+        logger.info("Finished parsing files. Parsed: %d, Skipped: %d", parsed_count, skipped_count)
         logger.debug("Final manifest state: %s", self.manifest)
 
         return self.manifest

@@ -157,7 +157,12 @@ class Metric(SchemaMixin):
 
 
 class Resource:
-    model_factory = {"models": Model, "relationships": Relationship, "sources": Source, "metrics": Metric}
+    model_factory = {
+        "models": Model,
+        "relationships": Relationship,
+        "sources": Source,
+        "metrics": Metric,
+    }
 
     def create_resource(self, resouce_type: str, data: dict):
         model_cls = self.model_factory.get(resouce_type.lower())

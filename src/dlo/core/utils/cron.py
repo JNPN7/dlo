@@ -39,9 +39,7 @@ def cron_to_human_time(cron):
         return f"every {day_interval} days"
 
     # Daily at fixed time
-    is_time_fixed = (
-        ("/" not in minute) and ("/" not in hour) and (minute != "*") and (hour != "*")
-    )
+    is_time_fixed = ("/" not in minute) and ("/" not in hour) and (minute != "*") and (hour != "*")
     is_daily = is_all(day) and is_all(dow) and is_all(month)
 
     if is_time_fixed and is_daily:

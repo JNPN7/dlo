@@ -1,6 +1,7 @@
 import click
 
-from dlo.core.cli.decorators import project
+import dlo.core.cli.decorators as d
+
 from dlo.core.parser.manifest import ManifestLoader
 
 
@@ -21,18 +22,22 @@ def cli(ctx, **kwargs):
 def version():
     """Show the version of DLO."""
     from dlo import __version__
+
     click.echo(f"DLO version: {__version__.version}")
 
 
 @cli.command("run")
 @click.pass_context
-@project
+@d.project
+@d.profile
 def run(ctx: click.Context, *args, **kwargs):
     """Run the DLO pipeline."""
     click.echo("Running DLO pipeline...")
     project = ctx.obj.get("project")
+    profile = ctx.obj.get("profile")
     manifest = ManifestLoader(project).load()
     print(manifest)
+    print(profile)
 
 
 if __name__ == "__main__":

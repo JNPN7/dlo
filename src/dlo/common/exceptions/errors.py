@@ -4,10 +4,10 @@ DLO error definitions aligned with JSON-RPC 2.0 error codes
 
 from typing import Any, Dict, Optional
 
-
 # ============================================================
 # Base Error
 # ============================================================
+
 
 class DloError(Exception):
     """
@@ -41,6 +41,7 @@ class DloError(Exception):
 # ============================================================
 # Protocol-Level Errors (JSON-RPC Spec Codes)
 # ============================================================
+
 
 class ParseError(DloError):
     CODE = -32700
@@ -76,10 +77,12 @@ class InternalError(DloError):
 # DLO Server Errors (Reserved Range: -32000 to -32099)
 # ============================================================
 
+
 class DloServerError(DloError):
     CODE = -32000
     MESSAGE = "Server error"
     ERROR_TYPE = "Server"
+
 
 # ---------------- Parse / Validation ----------------
 
@@ -91,6 +94,7 @@ class DloParseError(ParseError):
 
 
 # ---------------- Runtime / Execution ----------------
+
 
 class DloRuntimeError(DloServerError):
     CODE = -32001
@@ -112,6 +116,7 @@ class DloRecursionLimitError(DloRuntimeError):
 
 # ---------------- Configuration / Features ----------------
 
+
 class DloConfigError(DloServerError):
     CODE = -32010
     MESSAGE = "Configuration error"
@@ -127,6 +132,7 @@ class DloFeatureNotImplementedError(DloServerError):
 # ============================================================
 # Helper
 # ============================================================
+
 
 def to_error_dict(exc: Exception) -> Dict[str, Any]:
     """
