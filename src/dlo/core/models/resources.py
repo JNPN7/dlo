@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass, field
 from enum import auto
 from typing import Optional
@@ -43,6 +42,7 @@ class ModelType(EnumBase):
 class CodeType(EnumBase):
     sql = auto()
 
+
 # =========================
 # Base Models
 # =========================
@@ -66,6 +66,7 @@ class BaseResource(SchemaMixin):
 # =========================
 # Model Mixins
 # =========================
+
 
 @dataclass
 class DependsOn(SchemaMixin):
@@ -199,13 +200,14 @@ class Metric(BaseResource):
     resource_type: ResourceTypes = field(default=ResourceTypes.metric)
     description: Optional[str] = field(default=None)
 
+
 # =========================
 # Sql
 # =========================
 
 
 @dataclass(kw_only=True)
-class Code():
+class Code:
     name: str
     path: str
     code: str

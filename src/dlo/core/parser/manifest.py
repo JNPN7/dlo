@@ -25,7 +25,7 @@ from dlo.core.models.manifest import Manifest
 from dlo.core.models.resources import Code, Model, Resource, ResourceTypes
 
 # Configure module logger
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 class FileReaderFromFileSystem:
@@ -58,7 +58,7 @@ class FileReaderFromFileSystem:
         Raises:
             None: This method does not raise exceptions during initialization.
         """
-        logger.debug("Initializing FileReaderFromFileSystem with root_dir: %s", root_dir)
+        log.debug("Initializing FileReaderFromFileSystem with root_dir: %s", root_dir)
         self.root_dir = root_dir
         self._files: Optional[List[str]] = None
 
@@ -74,7 +74,7 @@ class FileReaderFromFileSystem:
             This method populates the internal _files cache. Use the `files`
             property for lazy-loaded access to the file list.
         """
-        logger.debug("Scanning directory for files: %s", self.root_dir)
+        log.debug("Scanning directory for files: %s", self.root_dir)
         _files: List[str] = []
 
         # Walk through the directory structure and collect file paths
@@ -88,7 +88,7 @@ class FileReaderFromFileSystem:
                 _files.append(file_path)
 
         self._files = _files
-        logger.info("Completed file scan. Found %d files in %s", len(_files), self.root_dir)
+        log.info("Completed file scan. Found %d files in %s", len(_files), self.root_dir)
 
     @property
     def files(self) -> List[str]:
@@ -102,7 +102,7 @@ class FileReaderFromFileSystem:
             List[str]: A list of absolute file paths found in the root directory.
         """
         if self._files is None:
-            logger.debug("Files not yet loaded, triggering get_files()")
+            log.debug("Files not yet loaded, triggering get_files()")
             self.get_files()
         return self._files  # type: ignore[return-value]
 
@@ -118,7 +118,7 @@ class FileReaderFromFileSystem:
             >>> yaml_files = reader.filter_yaml_files()
         """
         yaml_files = [f for f in self.files if f.endswith((".yaml", ".yml"))]
-        logger.debug(
+        log.debug(
             "Filtered %d YAML files from %d total files", len(yaml_files), len(self.files)
         )
         return yaml_files
@@ -136,7 +136,7 @@ class FileReaderFromFileSystem:
             >>> sql_files = reader.filter_sql_files()
         """
         sql_files = [f for f in self.files if f.endswith(".sql")]
-        logger.debug("Filtered %d SQL files from %d total files", len(sql_files), len(self.files))
+        log.debug("Filtered %d SQL files from %d total files", len(sql_files), len(self.files))
         return sql_files
 
     @staticmethod
@@ -159,14 +159,14 @@ class FileReaderFromFileSystem:
             >>> data = FileReaderFromFileSystem.read_yaml("config.yaml")
             >>> print(data["key"])
         """
-        logger.debug("Reading YAML file: %s", file_path)
+        log.debug("Reading YAML file: %s", file_path)
         try:
             with open(file_path, "r") as stream:
                 data: dict = yaml.safe_load(stream)
-            logger.debug("Successfully parsed YAML file: %s", file_path)
+            log.debug("Successfully parsed YAML file: %s", file_path)
             return data
         except yaml.YAMLError as exc:
-            logger.error("Failed to parse YAML file %s: %s", file_path, exc)
+            log.error("Failed to parse YAML file %s: %s", file_path, exc)
             raise errors.DloParseError(
                 message=f"Failed to parse YAML file '{file_path}': {exc}",
                 data={"file": str(file_path), "error": str(exc)},
@@ -192,14 +192,14 @@ class FileReaderFromFileSystem:
             >>> sql_content = FileReaderFromFileSystem.read_file("query.sql")
             >>> print(sql_content)
         """
-        logger.debug("Reading file: %s", file_path)
+        log.debug("Reading file: %s", file_path)
         try:
             with open(file_path, "r") as f:
                 content = f.read()
-            logger.debug("Successfully read file: %s (%d characters)", file_path, len(content))
+            log.debug("Successfully read file: %s (%d characters)", file_path, len(content))
             return content
         except Exception as exc:
-            logger.error("Failed to read file %s: %s", file_path, exc)
+            log.error("Failed to read file %s: %s", file_path, exc)
             raise errors.DloParseError(
                 message=f"Failed to read file '{file_path}': {exc}",
                 data={"file": str(file_path), "error": str(exc)},
@@ -233,7 +233,7 @@ class ManifestLoader:
             project: The Project object containing configuration details
                 including the project root directory path.
         """
-        logger.debug("Initializing ManifestLoader for project: %s", project.project_root)
+        log.debug("Initializing ManifestLoader for project: %s", project.project_root)
         self.project = project
         self.manifest = Manifest()
 
@@ -270,7 +270,7 @@ class ManifestLoader:
             errors.DloParseError: If the YAML file cannot be parsed.
             ValidationError: If a resource fails model validation.
         """
-        logger.info("Parsing YAML file: %s", file_path)
+        log.info("Parsing YAML file: %s", file_path)
         try:
             data = FileReaderFromFileSystem.read_yaml(file_path) or {}
         except Exception as exc:
@@ -280,18 +280,18 @@ class ManifestLoader:
 
         # Iterate over each resource type defined in the YAML file
         for resource_type, resource_data in data.items():
-            logger.debug("Processing resource type: %s", resource_type)
+            log.debug("Processing resource type: %s", resource_type)
             resource_model = Resource.get_resource(resource_type)
 
             # Skip unknown resource types
             if resource_model is None:
-                logger.warning(
+                log.warning(
                     "Unknown resource type '%s' in file %s, skipping", resource_type, file_path
                 )
                 continue
 
             if not isinstance(resource_data, list):
-                logger.warning(
+                log.warning(
                     "Expected list for resource type '%s' in file %s, skipping",
                     resource_type,
                     file_path,
@@ -321,13 +321,13 @@ class ManifestLoader:
 
                 manifest_resource[validated_data.unique_id] = validated_data
 
-                logger.debug(
+                log.debug(
                     "Added resource '%s' of type '%s' to manifest",
                     validated_data.name,
                     resource_type,
                 )
 
-        logger.info("Successfully parsed YAML file: %s", file_path)
+        log.info("Successfully parsed YAML file: %s", file_path)
 
     def parse_sql_file(self, file_path: Path) -> None:
         """
@@ -340,7 +340,7 @@ class ManifestLoader:
             The SQL content is stored in the manifest keyed by the file path
             as a string for consistent key types.
         """
-        logger.info("Parsing SQL file: %s", file_path)
+        log.info("Parsing SQL file: %s", file_path)
         name = file_path.stem
         self._check_if_name_already_exists(file_path, name, ResourceTypes.code)
 
@@ -350,7 +350,7 @@ class ManifestLoader:
         # Store SQL content using string path as key for consistency
         self.manifest.code[name] = Code(name=name, path=absolute_file_path, code=sql)
 
-        logger.debug("Added SQL file to manifest: %s (%d characters)", file_path, len(sql))
+        log.debug("Added SQL file to manifest: %s (%d characters)", file_path, len(sql))
 
     def parse_files(self, file_path: Path) -> None:
         """
@@ -376,7 +376,7 @@ class ManifestLoader:
 
         parse_func = mapper.get(file_path.suffix)
         if parse_func is None:
-            logger.debug("Skipping unsupported file type: %s", file_path)
+            log.debug("Skipping unsupported file type: %s", file_path)
             return
 
         parse_func(file_path)
@@ -396,12 +396,12 @@ class ManifestLoader:
             >>> manifest = loader.load()
             >>> print(f"Loaded {len(manifest.models)} models")
         """
-        logger.info("Starting manifest load for project: %s", self.project.project_root)
+        log.info("Starting manifest load for project: %s", self.project.project_root)
 
         # Initialize file reader for the project root
         reader = FileReaderFromFileSystem(self.project.project_root)
 
-        logger.info(
+        log.info(
             "Found %d files in project directory: %s", len(reader.files), self.project.project_root
         )
 
@@ -421,7 +421,7 @@ class ManifestLoader:
                 continue
             self.parse_files(file_path)
 
-        logger.info("Finished parsing files. Parsed: %d, Skipped: %d", parsed_count, skipped_count)
-        logger.debug("Final manifest state: %s", self.manifest)
+        log.info("Finished parsing files. Parsed: %d, Skipped: %d", parsed_count, skipped_count)
+        log.debug("Final manifest state: %s", self.manifest)
 
         return self.manifest

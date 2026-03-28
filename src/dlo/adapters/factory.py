@@ -55,12 +55,12 @@ class AdapterFactory:
         cls.adapters.pop(name, None)
 
     @classmethod
-    def create(cls, arguments: dict[str, any]) -> Adapter:
+    def create(cls, **args) -> Adapter:
         """Create a execution engine type"""
-        args_copy = arguments.copy()
+        args_copy = args.copy()
         env_type = args_copy.pop("type")
         try:
-            env_func = cls.execution_engine_funcs[env_type]
+            env_func = cls.adapters[env_type]
         except KeyError:
             raise ValueError(f"unknown adapter type {env_type!r}") from None
         return env_func(**args_copy)

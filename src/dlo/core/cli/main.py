@@ -26,18 +26,38 @@ def version():
     click.echo(f"DLO version: {__version__.version}")
 
 
+@cli.command("compile")
+@click.pass_context
+@d.project
+@d.profile
+@d.lifespan
+def compile(ctx: click.Context, *args, **kwargs):
+    """Compile the DLO pipeline."""
+    click.echo("Compiling DLO pipeline...")
+    project = ctx.obj.get("project")
+    profile = ctx.obj.get("profile")
+
+    runtime = Runtime(project=project, profile=profile)
+    runtime.compile()
+
+
 @cli.command("run")
 @click.pass_context
 @d.project
 @d.profile
+@d.lifespan
+@d.cached_manifest
 def run(ctx: click.Context, *args, **kwargs):
     """Run the DLO pipeline."""
     click.echo("Running DLO pipeline...")
     project = ctx.obj.get("project")
     profile = ctx.obj.get("profile")
 
+    # TODO: Use in very near future added to remember
+    _ = ctx.obj.get("cached_manifest")
+
     runtime = Runtime(project=project, profile=profile)
-    runtime.compile()
+    runtime.run()
 
 
 if __name__ == "__main__":
