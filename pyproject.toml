@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dlo"
+version = "0.0.1"
+description = "Data Lineage Orchestrator"
+authors = [{ name = "Juhel", email = "jpphanju54@gmail.com" }]
+license = "Apache-2.0"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.3.1",
+    "pydantic>=2.12.5",
+    "pyyaml>=6.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+    "pytest-asyncio",
+    "lefthook>=2.0.15",
+]
+test = [
+  "pytest",
+  "pytest-asyncio", 
+]
+lint = [
+  "ruff",
+]
+
+[tool.ruff]
+src = ["src"]
+
+[tool.mypy]
+mypy_path = "src"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+asyncio_mode = "auto"
+
+[project.scripts]
+dlo = "dlo.core.cli.main:cli"

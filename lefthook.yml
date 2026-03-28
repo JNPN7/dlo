@@ -1,0 +1,6 @@
+pre-commit:
+  parallel: false
+  commands:
+    lint:
+      glob: "src/**"
+      run: make lint format
