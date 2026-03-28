@@ -1,9 +1,12 @@
-from enum import Enum
+from dataclasses import dataclass
+from enum import StrEnum
 
+from mashumaro.mixins.json import DataClassJSONMixin
+from mashumaro.types import SerializableType
 from pydantic import BaseModel, ConfigDict
 
 
-class EnumBase(str, Enum):
+class EnumBase(SerializableType, StrEnum):
     """
     Base enum for semantic specs.
 
@@ -30,6 +33,25 @@ class EnumBase(str, Enum):
     def has_value(cls, value: str) -> bool:
         """Check if a value is a valid enum value."""
         return value.lower() in cls.values()
+
+    def __str__(self) -> str:
+        return self.value
+
+    # https://docs.python.org/3.6/library/enum.html#using-automatic-values
+    def _generate_next_value_(name, *_):
+        return name
+
+    def _serialize(self) -> str:
+        return self.value
+
+    @classmethod
+    def _deserialize(cls, value: str):
+        return cls(value)
+
+
+@dataclass
+class SchemaMixin(DataClassJSONMixin):
+    ...
 
 
 class SchemaBase(BaseModel):

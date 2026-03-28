@@ -1,10 +1,10 @@
 import uuid
 
-from typing import List, Optional
+from dataclasses import dataclass, field
+from enum import auto
+from typing import Optional
 
-from pydantic import Field
-
-from dlo.common.schema import EnumBase, SchemaBase
+from dlo.common.schema import EnumBase, SchemaMixin
 
 # =========================
 # Enums
@@ -12,27 +12,27 @@ from dlo.common.schema import EnumBase, SchemaBase
 
 
 class ResourceTypes(EnumBase):
-    source = "source"
-    model = "model"
-    relationship = "relationship"
-    metric = "metric"
+    source = auto()
+    model = auto()
+    relationship = auto()
+    metric = auto()
 
 
 class ColumnCategory(EnumBase):
-    dimension = "dimension"
-    measure = "measure"
+    dimension = auto()
+    measure = auto()
 
 
 class StorageType(EnumBase):
-    table = "table"
-    csv = "csv"
+    table = auto()
+    csv = auto()
 
 
 class ModelType(EnumBase):
-    materialized = "materialized"
-    view = "view"
-    ephemeral = "ephemeral"
-    # incremental = "incremental" 
+    materialized = auto()
+    view = auto()
+    ephemeral = auto()
+    # incremental = auto()
 
 
 # =========================
@@ -40,89 +40,97 @@ class ModelType(EnumBase):
 # =========================
 
 
-class BaseResource(SchemaBase):
+@dataclass
+class BaseResource(SchemaMixin):
     name: str
     file_path: str
     resource_type: ResourceTypes
     description: str
-    tags: Optional[List[str]] = None
-    uuid: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tags: Optional[list[str]] = None
+    uuid: str = field(default_factory=lambda: str(uuid.uuid4()))
 
 
 # =========================
 # Shared Models
 # =========================
 
-class ProfilingMetrics(SchemaBase):
+@dataclass
+class ProfilingMetrics(SchemaMixin):
     count: Optional[int] = None
     null_count: Optional[int] = None
     distinct_count: Optional[int] = None
 
 
-class Column(SchemaBase):
+@dataclass
+class Column(SchemaMixin):
     name: str
     type: str
     category: Optional[ColumnCategory] = None
     description: Optional[str] = None
-    tags: Optional[List[str]] = None
+    tags: Optional[list[str]] = None
     profiling_metrics: Optional[ProfilingMetrics] = None
-    sample_data: Optional[List[str | int | float]] = None
+    sample_data: Optional[list[str | int | float]] = None
 
 
 # =========================
 # Source Models
 # =========================
 
-class SourceDetails(SchemaBase):
+@dataclass
+class SourceDetails(SchemaMixin):
     full_name: str
     type: StorageType
 
 
-class Source(BaseResource):
+@dataclass
+class Source(SchemaMixin):
     name: str
     resource_type: ResourceTypes = ResourceTypes.source
     description: Optional[str] = None
-    tags: Optional[List[str]] = None
+    tags: Optional[list[str]] = None
     details: SourceDetails
     connection: Optional[str] = None
-    primary_key: Optional[List[str]] = None
-    unique_keys: Optional[List[List[str]]] = None
-    columns: List[Column]
+    primary_key: Optional[list[str]] = None
+    unique_keys: Optional[list[list[str]]] = None
+    columns: list[Column]
 
 
 # =========================
 # Model (Semantic / Transform)
 # =========================
 
-class ModelDetails(SchemaBase):
+@dataclass
+class ModelDetails(SchemaMixin):
     full_name: str
     type: StorageType
 
 
-class Model(BaseResource):
+@dataclass
+class Model(SchemaMixin):
     name: str
     resource_type: ResourceTypes = ResourceTypes.model
     description: Optional[str] = None
-    tags: Optional[List[str]] = None
+    tags: Optional[list[str]] = None
     type: ModelType
     details: Optional[ModelDetails] = None
     schedule: Optional[str] = None
-    primary_key: Optional[List[str]] = None
-    unique_keys: Optional[List[List[str]]] = None
-    columns: List[Column]
+    primary_key: Optional[list[str]] = None
+    unique_keys: Optional[list[list[str]]] = None
+    columns: list[Column]
 
 
 # =========================
 # Relationships
 # =========================
 
-class Relationship(BaseResource):
+@dataclass
+class Relationship(SchemaMixin):
     name: str
     resource_type: ResourceTypes = ResourceTypes.relationship
-    from_: str = Field(..., alias="from")
+    from_: str = field(metadata={"alias": "from"})
     to: str
-    from_columns: List[str]
-    to_columns: List[str]
+    from_columns: list[str]
+    to_columns: list[str]
     description: Optional[str] = None
 
 
@@ -130,7 +138,8 @@ class Relationship(BaseResource):
 # Metrics
 # =========================
 
-class Metric(BaseResource):
+@dataclass
+class Metric(SchemaMixin):
     name: str
     resource_type: ResourceTypes = ResourceTypes.metric
     expression: str
@@ -154,8 +163,7 @@ class Resource:
         if not model_cls:
             raise ValueError(f"Resource model: {resouce_type}")
         return model_cls(**data)
-    
+
     @classmethod
     def get_resource(self, resource_type: str) -> BaseResource:
         return self.model_factory.get(resource_type)
-

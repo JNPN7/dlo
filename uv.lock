@@ -47,6 +47,7 @@ version = "0.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
+    { name = "mashumaro" },
     { name = "pydantic" },
     { name = "pyyaml" },
 ]
@@ -69,6 +70,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.3.1" },
+    { name = "mashumaro" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pyyaml", specifier = ">=6.0.3" },
 ]
@@ -114,6 +116,18 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/7c/8f/e90724128f481c637b7e9343b6535622cfa136541959a49f8a3de0d0e7a5/lefthook-2.0.15.tar.gz", hash = "sha256:8a32c9f2d44f0ff0f3e3ab48f9802ca10f1222b491f3f14e03f577ec175b6649", size = 50175274, upload-time = "2026-01-13T10:02:58.76Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7c/d5/243d967f541d422a7252f92dbcc201cfd588bd404a66935baacc83be49c5/lefthook-2.0.15-py3-none-any.whl", hash = "sha256:54b174520f18a4fa2545ff1e5eae4c4d2515539fb25b8c4fe04b9224a2ff07ee", size = 50416709, upload-time = "2026-01-13T10:02:55.761Z" },
+]
+
+[[package]]
+name = "mashumaro"
+version = "3.20"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/64/3d/0f1bf475109a816c2a31a8b424750911343f0bce304827a5255df167547e/mashumaro-3.20.tar.gz", hash = "sha256:af4573f14ae61be3fbc3a473158ddfc1420f345410385809fd782e0d79e9215c", size = 191643, upload-time = "2026-02-09T21:53:55.24Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/96/5a/4fed77781061647d3be98e2f235ef1869289dd839ca0451a8d50a30fcd5c/mashumaro-3.20-py3-none-any.whl", hash = "sha256:648bc326f64c55447988eab67d6bfe3b7958c0961c83590709b1f950f88f4a3c", size = 94942, upload-time = "2026-02-09T21:53:53.343Z" },
 ]
 
 [[package]]

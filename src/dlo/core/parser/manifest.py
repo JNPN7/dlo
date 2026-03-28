@@ -268,7 +268,7 @@ class ManifestLoader:
             # Validate and add each resource to the manifest
             for d in resource_data:
                 d["file_path"] = file_path.absolute().as_posix()
-                validated_data = resource_model.model_validate(d)
+                validated_data = resource_model.from_dict(d)
 
                 resource = getattr(self.manifest, resource_type)
                 resource[validated_data.name] = validated_data

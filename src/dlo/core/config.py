@@ -1,25 +1,29 @@
-from typing import Dict, List
+from dataclasses import dataclass
 
-from dlo.common.schema import SchemaBase
+from dlo.common.schema import SchemaMixin
 
 
-class Project(SchemaBase):
+@dataclass
+class Project(SchemaMixin):
     project_name: str
-    version: str
     project_root: str
-    profile: str
-    memory: List[str]
+    # version: str
+    # profile: str
+    # memory: List[str]
 
 
-class Engine(SchemaBase):
+@dataclass
+class Engine(SchemaMixin):
     type: str
     config: dict
 
 
-class Connection(SchemaBase):
+@dataclass
+class Connection(SchemaMixin):
     ...
 
 
-class Profile(SchemaBase):
+@dataclass
+class Profile(SchemaMixin):
     engine: Engine
-    connections: Dict[str, Connection]
+    connections: dict[str, Connection]
