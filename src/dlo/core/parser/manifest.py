@@ -407,11 +407,11 @@ class ManifestLoader:
 
         # Iterate over all files and parse them based on their type
         parsed_count = 0
-        skipped_count = 0
 
         for file in reader.sql_files:
             file_path = Path(file)
             self.parse_files(file_path)
+            parsed_count += 1
 
         for file in reader.files:
             file_path = Path(file)
@@ -419,9 +419,12 @@ class ManifestLoader:
             # Skipping as already read in first run
             if file_path.suffix in (".sql"):
                 continue
+
             self.parse_files(file_path)
 
-        log.info("Finished parsing files. Parsed: %d, Skipped: %d", parsed_count, skipped_count)
+            parsed_count += 1
+
+        log.info("Finished parsing files. Parsed: %d", parsed_count)
         log.debug("Final manifest state: %s", self.manifest)
 
         return self.manifest

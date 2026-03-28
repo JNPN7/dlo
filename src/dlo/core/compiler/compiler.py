@@ -2,7 +2,7 @@ import json
 
 from itertools import chain
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal, Mapping, Optional
 
 from dlo.common.exceptions import errors
 from dlo.core.compiler.graph import Graph
@@ -13,9 +13,11 @@ from dlo.core.models.manifest import Manifest
 from dlo.core.models.resources import (
     CompiledResourceMixin,
     InjectedCTE,
+    Model,
     ModelType,
     Source,
 )
+from dlo.core.parser.sql_parser import SqlParser
 
 
 class GraphCompiler:
@@ -49,10 +51,12 @@ class GraphCompiler:
         self._graph = graph
         return self._graph
 
-    # FIXME: Replace file-based dependency loading with proper SQL parsing logic.
+    # NOTE: Replace file-based dependency loading with proper SQL parsing logic.
     # At the moment, dependencies are loaded directly from the file.
     # Future updates will introduce proper SQL parsing to accurately extract dependencies.
-    def get_dependents_of_nodes(self):
+    # Replaced not remoded for backup
+    def get_dependents_of_nodes_bak(self):
+        dependents = {}
 
         dependents_path = self.project_root_path / "dependents.json"
 
@@ -91,6 +95,20 @@ class GraphCompiler:
         }
 
         return formatted_dependents
+
+    def get_dependents_of_nodes(self):
+        dependents: Mapping[NodeId, list[str]] = {}
+        for node_unique_id, node in self.nodes.items():
+            # We requires dependent of model only as source don't have dependents
+            if not isinstance(node, Model):
+                continue
+
+            sql_parser = SqlParser(node.raw_code)
+            dependent = sql_parser.extract_table()
+
+            dependents[node_unique_id] = dependent
+
+        return dependents
 
     def draw_layer(self):
         graph = self.graph
