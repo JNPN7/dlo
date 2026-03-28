@@ -41,7 +41,6 @@ class AdapterFactory:
                 plugin = import_module(_plugin)
                 plugin.register(self)
             except ImportError:
-                print(f"Warning: Could not load plugin '{_plugin}' due to missing dependencies. This adapter will not be available.")  # noqa: E501
                 log.warning(f"Could not load plugin '{_plugin}' due to missing dependencies. This adapter will not be available.")  # noqa: E501
                 pass
 

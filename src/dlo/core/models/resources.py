@@ -1,4 +1,3 @@
-import uuid
 
 from dataclasses import dataclass, field
 from enum import auto
@@ -56,8 +55,12 @@ class BaseResource(SchemaMixin):
     resource_type: ResourceTypes
     description: str
     tags: Optional[list[str]] = field(default=None)
-    # TODO: Please don't use uuid generate properly, it hard to make track for human
-    unique_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    unique_id: Optional[str] = field(default=None)
+
+    # HACK: Having unique_id same as name. It may change for future requirements
+    def __post_init__(self):
+        if self.unique_id is None:
+            self.unique_id = self.name
 
 
 # =========================

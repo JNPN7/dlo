@@ -86,7 +86,6 @@ class FileReaderFromFileSystem:
             for file in fs:
                 file_path = os.path.join(root, file)
                 _files.append(file_path)
-                print("Found file: %s", file_path)
 
         self._files = _files
         logger.info("Completed file scan. Found %d files in %s", len(_files), self.root_dir)
@@ -320,7 +319,7 @@ class ManifestLoader:
                     validated_data.file_path, validated_data.name, resource_type
                 )
 
-                manifest_resource[validated_data.name] = validated_data
+                manifest_resource[validated_data.unique_id] = validated_data
 
                 logger.debug(
                     "Added resource '%s' of type '%s' to manifest",

@@ -256,7 +256,9 @@ class GraphCompiler:
 
         graph.draw_layer(nodes=self.nodes, figure_name=figure_name)
 
-    def _get_extra_ctes_of_predecessor(self, node_unique_id: NodeId) -> list[InjectedCTE]:
+    def _get_extra_ctes_of_predecessor(
+        self, node_unique_id: NodeId, successor_node: CompiledResourceMixin
+    ) -> list[InjectedCTE]:
         node = self.nodes[node_unique_id]
 
         # For sources, view model, materialized model
@@ -265,6 +267,7 @@ class GraphCompiler:
                 raise errors.DloCompilationError(
                     "Details is required for non-ephemeral model"
                 )
+            successor_node.depends_on.add_node(node.unique_id)
             return InjectedCTE(
                 id=node.unique_id,
                 sql=f"{node.name} as (\n\tSELECT * FROM {node.details.full_name}\n)",
@@ -277,6 +280,8 @@ class GraphCompiler:
 
             # Ephemeral model
             if node.type == ModelType.ephemeral:
+                for node_id in node.depends_on.nodes:
+                    successor_node.depends_on.add_node(node_id)
                 return [
                     *node.extra_ctes,
                     InjectedCTE(
@@ -306,7 +311,7 @@ class GraphCompiler:
         extra_ctes = [
             cte
             for predecessor_id in self.graph.predecessors(node_unique_id)
-            for cte in self._get_extra_ctes_of_predecessor(predecessor_id)
+            for cte in self._get_extra_ctes_of_predecessor(predecessor_id, node)
         ]
 
         # Mark compiled
