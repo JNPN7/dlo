@@ -1,4 +1,33 @@
-def cron_to_human_time(cron):
+import re
+
+
+def clean_cron(cron: str) -> str:
+    replacements = {
+        " ": "_",
+        "*": "all",
+        "?": "any",
+        "/": "by",
+        ",": "and",
+        "#": "hash",
+    }
+
+    # Replace special characters one-by-one
+    cleaned = re.sub(
+        r"[ */?,#]",
+        lambda m: replacements[m.group()],
+        cron,
+    )
+
+    # Remove anything still unsafe
+    cleaned = re.sub(r"[^\w\-]", "", cleaned)
+
+    # Collapse multiple underscores
+    cleaned = re.sub(r"_+", "_", cleaned)
+
+    return cleaned.strip("_")
+
+
+def cron_to_human_time(cron: str):
     """
     Converts a Quartz cron expression into a human-readable string.
     Supports: minutes, hours, days, weeks, months, daily fixed times.

@@ -136,7 +136,7 @@ class Graph:
             if node in labels:
                 # Offset 15 pixels downward
                 text_transform = transforms.offset_copy(
-                    ax.transData, fig=fig, x=0, y=-25, units='points'
+                    ax.transData, fig=fig, x=0, y=-25, units="points"
                 )
 
                 ax.text(

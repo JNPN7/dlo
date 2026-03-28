@@ -1,4 +1,3 @@
-
 from abc import ABC, abstractmethod
 from typing import Optional
 
@@ -27,5 +26,13 @@ class Adapter(ABC):
 
     @abstractmethod
     def create_job(
-        self, node_map: NodeMap, nodes: list[NodeId], job_name: str, cron: Optional[str] = None
-    ): ...
+        self,
+        node_map: NodeMap,
+        nodes: list[NodeId],
+        job_name: str,
+        cron: Optional[str] = None,
+        job_info: Optional[dict] = None,
+    ) -> dict: ...
+
+    @abstractmethod
+    def pause_job(self, job_info: dict, cron: str) -> Optional[dict]: ...

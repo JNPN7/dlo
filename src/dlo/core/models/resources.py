@@ -101,6 +101,7 @@ class CompiledResourceMixin(SchemaMixin):
 class ScheduledResourceMixin(SchemaMixin):
     schedule_depends_on: DependsOn = field(default_factory=DependsOn)
 
+
 # =========================
 # Shared Models
 # =========================
@@ -191,13 +192,9 @@ class Model(BaseResource, CompiledResourceMixin, ScheduledResourceMixin):
             try:
                 cron_checker = QuartzCronChecker.from_cron_string(self.schedule)
                 if not cron_checker.validate():
-                    raise errors.DloCompilationError(
-                        err_msg
-                    )
+                    raise errors.DloCompilationError(err_msg)
             except Exception as e:
-                raise errors.DloCompilationError(
-                    f"{err_msg}\nMessage: {e}"
-                )
+                raise errors.DloCompilationError(f"{err_msg}\nMessage: {e}")
 
 
 # =========================

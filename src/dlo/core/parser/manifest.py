@@ -13,8 +13,9 @@ Classes:
 import logging
 import os
 
+from functools import cached_property
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 import yaml
 
@@ -60,19 +61,17 @@ class FileReaderFromFileSystem:
         """
         log.debug("Initializing FileReaderFromFileSystem with root_dir: %s", root_dir)
         self.root_dir = root_dir
-        self._files: Optional[List[str]] = None
 
-    def get_files(self) -> None:
+    @cached_property
+    def files(self) -> List[str]:
         """
-        Retrieve all files from the root directory recursively.
+        Return the list of files in the root directory.
 
-        This method walks through the directory structure starting from the
-        root directory and collects all file paths into the _files attribute.
-        Hidden directories and files are included in the scan.
+        This property provides lazy-loaded access to the file list. On first
+        access, it triggers a directory scan
 
-        Note:
-            This method populates the internal _files cache. Use the `files`
-            property for lazy-loaded access to the file list.
+        Returns:
+            List[str]: A list of absolute file paths found in the root directory.
         """
         log.debug("Scanning directory for files: %s", self.root_dir)
         _files: List[str] = []
@@ -87,24 +86,8 @@ class FileReaderFromFileSystem:
                 file_path = os.path.join(root, file)
                 _files.append(file_path)
 
-        self._files = _files
         log.info("Completed file scan. Found %d files in %s", len(_files), self.root_dir)
-
-    @property
-    def files(self) -> List[str]:
-        """
-        Return the list of files in the root directory.
-
-        This property provides lazy-loaded access to the file list. On first
-        access, it triggers a directory scan via get_files().
-
-        Returns:
-            List[str]: A list of absolute file paths found in the root directory.
-        """
-        if self._files is None:
-            log.debug("Files not yet loaded, triggering get_files()")
-            self.get_files()
-        return self._files  # type: ignore[return-value]
+        return _files
 
     def yaml_files(self) -> List[str]:
         """
@@ -118,9 +101,7 @@ class FileReaderFromFileSystem:
             >>> yaml_files = reader.filter_yaml_files()
         """
         yaml_files = [f for f in self.files if f.endswith((".yaml", ".yml"))]
-        log.debug(
-            "Filtered %d YAML files from %d total files", len(yaml_files), len(self.files)
-        )
+        log.debug("Filtered %d YAML files from %d total files", len(yaml_files), len(self.files))
         return yaml_files
 
     @property

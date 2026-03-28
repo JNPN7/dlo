@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from functools import cached_property
 from pathlib import Path
 from typing import Optional
 
@@ -16,6 +17,10 @@ class Project(SchemaMixin):
     profile: str
     memory: Optional[list[str]] = None
     runtime_config: dict = field(default_factory=dict)
+
+    @cached_property
+    def project_root_path(self):
+        return Path(self.project_root).absolute()
 
     @classmethod
     def __from_project_root__(cls, project_root: str):
@@ -41,7 +46,9 @@ class Project(SchemaMixin):
         with open(config_file) as f:
             config = yaml.safe_load(f)
 
-        return cls.from_dict({"project_root": project_root_path, **config})
+        config["project_root"] = project_root_path
+
+        return cls.from_dict(config)
 
 
 @dataclass
@@ -63,7 +70,7 @@ class Profile(SchemaMixin):
     @classmethod
     def __from_project__(cls, project: Project):
         # read of profile if profile.yaml exists else from ~/.config/dlo/profile.yml
-        project_root_path = Path(project.project_root).absolute()
+        project_root_path = project.project_root_path
 
         def find_profile_file(project_root_path: Path) -> Path:
             candidates = [

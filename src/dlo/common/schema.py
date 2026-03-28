@@ -49,5 +49,4 @@ class EnumBase(SerializableType, StrEnum):
 
 
 @dataclass
-class SchemaMixin(DataClassJSONMixin):
-    ...
+class SchemaMixin(DataClassJSONMixin): ...

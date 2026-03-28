@@ -21,7 +21,8 @@ class SqlParser:
         tables = self.expr.find_all(exp.Table)
         table_names = {
             ".".join(part for part in [t.catalog, t.db, t.name] if part)
-            for t in tables if t.name not in cte_names
+            for t in tables
+            if t.name not in cte_names
         }
 
         return table_names

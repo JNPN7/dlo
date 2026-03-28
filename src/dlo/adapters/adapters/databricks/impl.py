@@ -51,11 +51,7 @@ class DatabricksConfig(SchemaMixin):
             "token",
         )
 
-        return {
-            field: value
-            for field in fields
-            if (value := getattr(self, field)) is not None
-        }
+        return {field: value for field in fields if (value := getattr(self, field)) is not None}
 
     @classmethod
     def from_any(cls, value: "DatabricksConfig | Mapping[str, Any]"):
@@ -138,9 +134,7 @@ class DatabricksAdapter(Adapter):
         headers = {
             "Content-Type": "application/json",
         }
-        self.client.api_client.do(
-            "POST", "/api/2.2/jobs/reset", body=body, headers=headers
-        )
+        self.client.api_client.do("POST", "/api/2.2/jobs/reset", body=body, headers=headers)
 
     def connection(self):
         connection = sql.connect(
@@ -335,9 +329,7 @@ class DatabricksAdapter(Adapter):
                 )
                 for dependent in node.schedule_depends_on.nodes
             ],
-            run_if=self.runtime_config.run_if
-            if len(node.schedule_depends_on.nodes) > 0
-            else None,
+            run_if=self.runtime_config.run_if if len(node.schedule_depends_on.nodes) > 0 else None,
         )
         return task
 
@@ -348,7 +340,7 @@ class DatabricksAdapter(Adapter):
         job_name: str,
         cron: Optional[str] = None,
         job_info: Optional[dict] = None,
-    ):
+    ) -> dict:
         tasks: list[Task] = []
         if job_info is None:
             job_info = {}
@@ -375,3 +367,26 @@ class DatabricksAdapter(Adapter):
         return {
             "job_id": job_id,
         }
+
+    def pause_job(self, job_info: dict, cron: str) -> Optional[dict]:
+        job_id = job_info["job_id"]
+
+        try:
+            self.client.jobs.update(
+                job_id=job_id,
+                new_settings=JobSettings(
+                    tasks=[],
+                    schedule=CronSchedule(
+                        quartz_cron_expression=cron,
+                        timezone_id=self.runtime_config.timezone_id,
+                        pause_status=PauseStatus.PAUSED,
+                    ),
+                ),
+            )
+            log.info("Job paused: %s", job_id)
+
+            return job_info
+        except Exception as e:
+            log.error("Couldn't pause the job `%d`. Error: %s", job_id, e)
+
+            return None

@@ -75,9 +75,7 @@ ORDER BY ed.recent_spend DESC;
 
 
 class TestSqlParser:
-    @pytest.mark.parametrize("query, query_tables", [
-        (COMPLEX_QUERY, COMPLEX_QUERY_TABLES)
-    ])
+    @pytest.mark.parametrize("query, query_tables", [(COMPLEX_QUERY, COMPLEX_QUERY_TABLES)])
     def test_sql_parser(self, query, query_tables):
         sql_parser = SqlParser(query)
         tables = sql_parser.extract_table()

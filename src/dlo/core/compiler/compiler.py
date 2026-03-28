@@ -1,8 +1,9 @@
 import json
 
+from functools import cached_property
 from itertools import chain
 from pathlib import Path
-from typing import Literal, Mapping, Optional
+from typing import Literal, Mapping
 
 from dlo.common.exceptions import errors
 from dlo.core.compiler.graph import Graph
@@ -15,6 +16,7 @@ from dlo.core.models.resources import (
     InjectedCTE,
     Model,
     ModelType,
+    ScheduledResourceMixin,
     Source,
 )
 from dlo.core.parser.sql_parser import SqlParser
@@ -25,8 +27,6 @@ class GraphCompiler:
         self.manifest: Manifest = manifest
         self.project: Project = project
 
-        self._graph: Optional[Graph] = None
-
         # Nodes with mapping
         collections = [
             manifest.sources.values(),
@@ -34,12 +34,8 @@ class GraphCompiler:
         ]
         self.nodes: NodeMap = {node.unique_id: node for node in chain(*collections)}
 
-        self.project_root_path = Path(self.project.project_root)
-
-    @property
+    @cached_property
     def graph(self):
-        if self._graph is not None:
-            return self._graph
         graph = Graph()
 
         for node in self.nodes.keys():
@@ -48,8 +44,7 @@ class GraphCompiler:
         dependents = self.get_dependents_of_nodes()
         graph.add_edges_from((dep, node) for node, deps in dependents.items() for dep in deps)
 
-        self._graph = graph
-        return self._graph
+        return graph
 
     # NOTE: Replace file-based dependency loading with proper SQL parsing logic.
     # At the moment, dependencies are loaded directly from the file.
@@ -58,7 +53,7 @@ class GraphCompiler:
     def get_dependents_of_nodes_bak(self):
         dependents = {}
 
-        dependents_path = self.project_root_path / "dependents.json"
+        dependents_path = self.project.project_root_path / "dependents.json"
 
         with open(dependents_path, "r") as f:
             dependents = json.load(f)
@@ -112,7 +107,7 @@ class GraphCompiler:
 
     def draw_layer(self):
         graph = self.graph
-        figure_name = self.project_root_path / COMPILED_GRAPH_FIG_PATH_NODES
+        figure_name = self.project.project_root_path / COMPILED_GRAPH_FIG_PATH_NODES
 
         graph.draw_layer(nodes=self.nodes, figure_name=figure_name)
 
@@ -189,17 +184,53 @@ class GraphCompiler:
 
     def write_compiled_code_node(self, model: CompiledResourceMixin) -> Path:
         code_path = Path(model.code_path)
-        relative_path = code_path.relative_to(self.project_root_path)
+        relative_path = code_path.relative_to(self.project.project_root_path)
 
-        compiled_path = self.project_root_path / TARGET_DIR / relative_path
+        compiled_path = self.project.project_root_path / TARGET_DIR / relative_path
         compiled_path.parent.mkdir(parents=True, exist_ok=True)
 
         with open(compiled_path, "w", encoding="utf-8") as f:
             f.write(model.compiled_code)
         return compiled_path
 
+    # TODO: Duplicate Scheduling
+    def draw_cron_dependents_graph(self, graph: Graph, cron: str):
+        figure_name = self.project.project_root_path / f"{cron}.png"
+        nodes = {_id: node for _id, node in self.nodes.items() if _id in graph.nodes}
+
+        graph.draw_layer(nodes, figure_name=figure_name)
+
+    def schedule(self, draw: bool = True):
+        # TODO: Duplicate Scheduling
+        schedule_cron = {}
+
+        for node in self.nodes.values():
+            if not isinstance(node, ScheduledResourceMixin) or not node.schedule:
+                continue
+
+            if node.schedule not in schedule_cron:
+                schedule_cron[node.schedule] = []
+
+            schedule_cron[node.schedule].append(node.unique_id)
+
+        for cron, node_unique_ids in schedule_cron.items():
+            cron_graph = self.graph.subgraph(node_unique_ids)
+
+            if draw:
+                self.draw_cron_dependents_graph(cron_graph, cron)
+
+            for node_unique_id in node_unique_ids:
+                node = self.nodes[node_unique_id]
+
+                for predecessor_node_unique_id in cron_graph.predecessors(node.unique_id):
+                    node.schedule_depends_on.nodes.append(predecessor_node_unique_id)
+
     def compile(self):
         self.draw_layer()
 
         for node_unique_id in self.graph.topoligical_sort:
             self.compile_node(node_unique_id)
+
+        self.schedule()
+
+        self.manifest.save(self.project)
