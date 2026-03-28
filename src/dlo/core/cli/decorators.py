@@ -13,7 +13,7 @@ LogLevels = NewType("LogLevels", Literal["info", "error", "debug"])
 
 
 def project(func):
-    @click.option("--project-root", "-p", type=str, help="Path to the DLO project.", default=".")
+    @click.option("--project-root", "-r", type=str, help="Path to the DLO project.", default=".")
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         ctx = args[0]
@@ -59,6 +59,7 @@ def profile(func):
         ctx = args[0]
 
         ctx = cast("click.Context", ctx)
+        ctx.obj = ctx.obj or {}
 
         project: Project = ctx.obj["project"]
         ctx.obj["profile"] = Profile.__from_project__(project)
@@ -80,9 +81,32 @@ def cached_manifest(func):
         ctx = args[0]
 
         ctx = cast("click.Context", ctx)
+        ctx.obj = ctx.obj or {}
 
         cached_manifest = kwargs.get("cached_manifest")
         ctx.obj["cached_manifest"] = cached_manifest
+
+        func(ctx, *args, **kwargs)
+
+    return wrapper
+
+
+def server(func):
+    @click.option("--port", "-p", type=int, help="Port of application", default=6363)
+    @click.option("--host", "-h", type=str, help="IP address", default="0.0.0.0")
+    @click.option("--reload", "-d", is_flag=True, help="IP address")
+    @click.option("--workers", "-w", type=int, help="Number of workers", default=None)
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        ctx = args[0]
+
+        ctx = cast("click.Context", ctx)
+        ctx.obj = ctx.obj or {}
+
+        ctx.obj["port"] = kwargs.get("port")
+        ctx.obj["host"] = kwargs.get("host")
+        ctx.obj["reload"] = kwargs.get("reload")
+        ctx.obj["workers"] = kwargs.get("workers")
 
         func(ctx, *args, **kwargs)
 

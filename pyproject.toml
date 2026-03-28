@@ -18,6 +18,8 @@ dependencies = [
     "networkx>=3.4.2",
     "sqlglot>=29.0.1",
     "quartz-cron-checker>=0.2.1",
+    "fastmcp>=3.1.0",
+    "fastapi>=0.135.1",
 ]
 
 [dependency-groups]

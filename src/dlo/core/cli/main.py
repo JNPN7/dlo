@@ -79,5 +79,42 @@ def schedule(ctx: click.Context, *args, **kwargs):
     runtime.schedule()
 
 
+@cli.command("mcp")
+@click.pass_context
+@d.project
+@d.profile
+@d.lifespan
+@d.cached_manifest
+@d.server
+def mcp(ctx: click.Context, *args, **kwargs):
+    """Starting MCP server."""
+    click.echo("Starting MCP server...")
+    project = ctx.obj.get("project")
+    profile = ctx.obj.get("profile")
+
+    # TODO: Use in very near future added to remember
+    _ = ctx.obj.get("cached_manifest")
+
+    runtime = Runtime(project=project, profile=profile)
+    runtime.compile()
+
+    import uvicorn
+
+    from dlo.mcp.server import mcp
+
+    host = ctx.obj.get("host")
+    port = ctx.obj.get("port")
+    reload = ctx.obj.get("reload")
+    workers = ctx.obj.get("workers")
+
+    uvicorn.run(
+        mcp,
+        host=host,
+        port=port,
+        reload=reload,
+        workers=workers,
+    )
+
+
 if __name__ == "__main__":
     cli()
