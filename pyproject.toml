@@ -39,6 +39,11 @@ databricks = [
   "databricks-sdk>=0.94.0",
   "databricks-sql-connector>=4.2.3",
 ]
+embeddings = [
+    "fastembed>=0.8.0",
+    "langchain-community>=0.4.1",
+    "langchain-openai>=1.1.12",
+]
 
 [tool.ruff]
 src = ["src"]

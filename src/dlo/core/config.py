@@ -63,9 +63,16 @@ class Connection(SchemaMixin):
 
 
 @dataclass
+class Embeddings(SchemaMixin):
+    provider: str
+    config: dict
+
+
+@dataclass
 class Profile(SchemaMixin):
     engine: Engine
     connections: Optional[dict[str, Connection]] = field(default=None)
+    embeddings: Optional[dict[str, Embeddings]] = field(default=None)
 
     @classmethod
     def __from_project__(cls, project: Project):

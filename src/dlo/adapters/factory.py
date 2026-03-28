@@ -4,6 +4,7 @@ import logging
 from typing import Callable
 
 from dlo.adapters.adapter import Adapter
+from dlo.common.exceptions import errors
 
 log = logging.getLogger("__name__")
 
@@ -64,5 +65,5 @@ class AdapterFactory:
         try:
             env_func = cls.adapters[env_type]
         except KeyError:
-            raise ValueError(f"unknown adapter type {env_type!r}") from None
+            raise errors.MethodNotFoundError(f"unknown adapter type {env_type!r}")
         return env_func(**args_copy)

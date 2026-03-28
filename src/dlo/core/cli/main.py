@@ -92,6 +92,11 @@ def execute_query(ctx: click.Context, *args, **kwargs):
     query = kwargs.get("query")
 
     runtime = Runtime(project=project, profile=profile, manifest=manifest)
+
+    # Compile if not cached
+    if manifest is None:
+        runtime.compile()
+
     result = runtime.execute_query(query)
     click.echo(result)
 

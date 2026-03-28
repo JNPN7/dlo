@@ -28,8 +28,8 @@ export function Sidebar() {
     <div className="flex h-full w-64 flex-col border-r border-border bg-sidebar-background">
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <Database className="h-4 w-4 text-primary-foreground" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg">
+          <img src='/favicon.svg' className="h-6 w-6 text-primary-foreground" />
         </div>
         <span className="text-xl font-bold text-sidebar-foreground">DLO</span>
       </div>

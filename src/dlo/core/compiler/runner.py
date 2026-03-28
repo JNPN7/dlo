@@ -161,11 +161,11 @@ class Runner:
                 continue
 
             # Get cte of dependents of the node
-            filterd_node_extra_ctes = [
+            filtered_node_extra_ctes = [
                 injected_cte for injected_cte in node.extra_ctes
                 if injected_cte.id not in dependents
             ]
-            extra_ctes.extend(filterd_node_extra_ctes)
+            extra_ctes.extend(filtered_node_extra_ctes)
 
             # Add cte of the node
             extra_ctes.append(
