@@ -47,6 +47,8 @@ def lifespan(func):
         project: Project = ctx.obj["project"]
 
         log_file = Path(project.project_root) / LOG_FILE
+        ctx.obj["log_file"] = log_file
+
         setup_logger(level=log_level, log_file=log_file)
 
         func(ctx, *args, **kwargs)
@@ -102,7 +104,7 @@ def cached_manifest(func):
 def server(func):
     @click.option("--port", "-p", type=int, help="Port of application", default=6363)
     @click.option("--host", "-h", type=str, help="IP address", default="0.0.0.0")
-    @click.option("--reload", "-d", is_flag=True, help="IP address")
+    @click.option("--reload", "-R", is_flag=True, help="Auto-reload on code changes")
     @click.option("--workers", "-w", type=int, help="Number of workers", default=None)
     @functools.wraps(func)
     def wrapper(*args, **kwargs):

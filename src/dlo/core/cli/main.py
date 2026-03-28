@@ -131,5 +131,64 @@ def mcp(ctx: click.Context, *args, **kwargs):
     )
 
 
+@cli.command("serve")
+@click.pass_context
+@d.project
+@d.lifespan
+@d.server
+@click.option(
+    "--dev", "-d", is_flag=True, help="Development mode (enables CORS for frontend dev server)"
+)
+def serve(ctx: click.Context, *args, **kwargs):
+    """Start the DLO UI server.
+
+    Serves the manifest data through a REST API and the React UI.
+
+    In development mode (--dev), CORS is enabled for the frontend dev server.
+    In production mode, the API serves the built React static files.
+    """
+    import uvicorn
+
+    dev_mode = kwargs.get("dev", False)
+
+    project = ctx.obj.get("project")
+    log_level = ctx.obj.get("log_level", "error")
+    log_file = ctx.obj.get("log_file")
+    host = ctx.obj.get("host")
+    port = ctx.obj.get("port")
+    reload = ctx.obj.get("reload")
+    workers = ctx.obj.get("workers")
+
+    if dev_mode:
+        click.echo("Starting DLO UI server in development mode...")
+        click.echo(f"  API Server: http://{host}:{port}")
+        click.echo(f"  API Docs:   http://{host}:{port}/api/docs")
+        click.echo("")
+        click.echo("Run 'npm run dev' in src/dlo/ui/ to start the React dev server.")
+        click.echo("The React app will proxy API requests to this server.")
+    else:
+        click.echo("Starting DLO UI server...")
+        click.echo(f"  UI:       http://{host}:{port}")
+        click.echo(f"  API Docs: http://{host}:{port}/api/docs")
+
+    # Create app with appropriate mode
+    from dlo.api import RegisterApp
+
+    app = RegisterApp(
+        project=project,
+        log_level=log_level,
+        log_file=log_file,
+        dev_mode=dev_mode,
+    )
+
+    uvicorn.run(
+        app.app,
+        host=host,
+        port=port,
+        reload=reload,
+        workers=workers,
+    )
+
+
 if __name__ == "__main__":
     cli()

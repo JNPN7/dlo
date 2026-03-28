@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from enum import auto
 from typing import Optional
 
+from mashumaro.config import BaseConfig
 from quartz_cron_checker import QuartzCronChecker
 
 from dlo.common.exceptions import errors
@@ -221,6 +222,12 @@ class Relationship(BaseResource):
     to_columns: list[str]
     resource_type: ResourceTypes = field(default=ResourceTypes.relationship)
     description: Optional[str] = field(default=None)
+
+    class Config(BaseConfig):
+        aliases = {
+            "from_": "from",   # write as "from"
+        }
+        allow_deserialization_not_by_alias = True
 
 
 # =========================

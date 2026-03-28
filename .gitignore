@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -217,3 +216,7 @@ __marimo__/
 
 # Project Local
 .project*
+
+# UI / Frontend
+src/dlo/ui/node_modules/
+src/dlo/ui/dist/
