@@ -220,3 +220,6 @@ __marimo__/
 # UI / Frontend
 src/dlo/ui/node_modules/
 src/dlo/ui/dist/
+
+# temp data
+.data/
