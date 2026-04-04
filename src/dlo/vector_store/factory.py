@@ -3,12 +3,12 @@ import logging
 
 from typing import Callable
 
-from dlo.adapters.adapter import Adapter
 from dlo.common.exceptions import errors
+from dlo.vector_store.vector_store import VectorStore
 
 log = logging.getLogger("__name__")
 
-ADAPTERS_PLUGIN_DIRS = ["dlo.adapters.adapters"]
+VECTOR_STORES_PLUGIN_DIRS = ["dlo.vector_store.stores"]
 
 
 class ModuleInterface:
@@ -24,8 +24,8 @@ def import_module(name: str) -> ModuleInterface:
     return importlib.import_module(name)  # type: ignore
 
 
-class AdapterFactory:
-    adapters: dict[str, Callable[..., Adapter]] = {}
+class VectorStoreFactory:
+    vector_stores: dict[str, Callable[..., VectorStore]] = {}
     _plugin_registry: dict[str, str] = {}  # name -> module path (not yet imported)
 
     # LOADER
@@ -33,7 +33,7 @@ class AdapterFactory:
         plugins = list(plugins or [])
 
         # Auto-discover from packages
-        for pkg in (plugin_packages or ADAPTERS_PLUGIN_DIRS):
+        for pkg in (plugin_packages or VECTOR_STORES_PLUGIN_DIRS):
             self._discover_and_register(pkg)
 
         for plugin_path in plugins:
@@ -57,23 +57,23 @@ class AdapterFactory:
         self._plugin_registry[name] = plugin
 
     @classmethod
-    def register(cls, name: str, creater_fn: Adapter) -> None:
-        """Register new adapter"""
-        cls.adapters[name] = creater_fn
+    def register(cls, name: str, creater_fn: VectorStore) -> None:
+        """Register new Vector Store"""
+        cls.vector_stores[name] = creater_fn
 
     @classmethod
     def unregister(cls, name: str) -> None:
-        """Unregister a adapter"""
-        cls.adapters.pop(name, None)
+        """Unregister a Vector Store"""
+        cls.vector_stores.pop(name, None)
 
     @classmethod
     def _load_plugin(cls, name: str) -> None:
         """Lazily import and register a plugin only when needed."""
-        if name in cls.adapters:
+        if name in cls.vector_stores:
             return
 
         if name not in cls._plugin_registry:
-            raise errors.MethodNotFoundError(f"unknown adapter type {name!r}")
+            raise errors.MethodNotFoundError(f"unknown vector store type {name!r}")
 
         plugin_path = cls._plugin_registry[name]
         try:
@@ -85,7 +85,7 @@ class AdapterFactory:
             )
 
     @classmethod
-    def create(cls, **args) -> Adapter:
+    def create(cls, **args) -> VectorStore:
         """Create a Adapter type"""
         args_copy = args.copy()
         env_type = args_copy.pop("type")
@@ -93,7 +93,7 @@ class AdapterFactory:
         cls._load_plugin(env_type)
 
         try:
-            env_func = cls.adapters[env_type]
+            env_func = cls.vector_stores[env_type]
         except KeyError:
-            raise errors.MethodNotFoundError(f"unknown adapter type {env_type!r}")
+            raise errors.MethodNotFoundError(f"unknown vector store type {env_type!r}")
         return env_func(**args_copy)
