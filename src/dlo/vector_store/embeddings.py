@@ -1,6 +1,7 @@
 """
 Embeddings classes with factory
 """
+
 from dlo.common.exceptions import errors
 
 

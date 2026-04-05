@@ -225,7 +225,7 @@ class Relationship(BaseResource):
 
     class Config(BaseConfig):
         aliases = {
-            "from_": "from",   # write as "from"
+            "from_": "from",  # write as "from"
         }
         allow_deserialization_not_by_alias = True
 

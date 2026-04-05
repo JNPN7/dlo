@@ -33,7 +33,7 @@ class AdapterFactory:
         plugins = list(plugins or [])
 
         # Auto-discover from packages
-        for pkg in (plugin_packages or ADAPTERS_PLUGIN_DIRS):
+        for pkg in plugin_packages or ADAPTERS_PLUGIN_DIRS:
             self._discover_and_register(pkg)
 
         for plugin_path in plugins:

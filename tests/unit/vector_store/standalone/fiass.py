@@ -1,6 +1,8 @@
 import json
 import os
 
+from typing import Literal
+
 import pytest
 
 from dlo.vector_store.embeddings import Embeddings
@@ -8,6 +10,10 @@ from dlo.vector_store.embeddings import Embeddings
 test_embeddings_configs = os.environ.get("TEST_EMBEDDINGS_CONFIG")
 
 PERSIST_DIR = "./.data/fiass_index"
+
+DISTANCE_SUPPORT = Literal[
+    "EUCLIDEAN_DISTANCE", "MAX_INNER_PRODUCT", "DOT_PRODUCT", "JACCARD", "COSINE"
+]
 
 
 class TestFiass:
@@ -29,6 +35,7 @@ class TestFiass:
             index=index,
             docstore=InMemoryDocstore(),
             index_to_docstore_id={},
+            distance_strategy="COSINE",
         )
 
         # Add document
@@ -37,12 +44,12 @@ class TestFiass:
         from langchain_core.documents import Document
 
         document_1 = Document(
-            page_content="I had chocolate chip pancakes and scrambled eggs for breakfast this morning.",
+            page_content="I had chocolate chip pancakes and scrambled eggs for breakfast this morning.",  # noqa: E501
             metadata={"source": "tweet"},
         )
 
         document_2 = Document(
-            page_content="The weather forecast for tomorrow is cloudy and overcast, with a high of 62 degrees.",
+            page_content="The weather forecast for tomorrow is cloudy and overcast, with a high of 62 degrees.",  # noqa: E501
             metadata={"source": "news"},
         )
 
