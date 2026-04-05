@@ -81,7 +81,7 @@ def schedule(ctx: click.Context, *args, **kwargs):
 @d.profile
 @d.lifespan
 @d.cached_manifest
-@click.argument('query')
+@click.argument("query")
 def execute_query(ctx: click.Context, *args, **kwargs):
     """Run query."""
     click.echo("Running the query")

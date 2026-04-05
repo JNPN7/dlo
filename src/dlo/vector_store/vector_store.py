@@ -1,5 +1,4 @@
 from abc import ABC
 
 
-class VectorStore(ABC):
-    ...
+class VectorStore(ABC): ...

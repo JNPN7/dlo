@@ -1,6 +1,8 @@
 import json
 import os
 
+from typing import Literal
+
 import pytest
 
 from dlo.vector_store.embeddings import Embeddings
@@ -8,6 +10,8 @@ from dlo.vector_store.embeddings import Embeddings
 test_embeddings_configs = os.environ.get("TEST_EMBEDDINGS_CONFIG")
 
 PERSIST_DIR = "./.data/qdrant_langchain"
+
+DISTANCE_SUPPORT = Literal["Cosine", "Euclid", "Dot", "Manhattan"]
 
 
 class TestQdrant:
@@ -18,7 +22,7 @@ class TestQdrant:
 
         from langchain_qdrant import FastEmbedSparse, QdrantVectorStore, RetrievalMode
         from qdrant_client import QdrantClient, models
-        from qdrant_client.http.models import Distance, SparseVectorParams, VectorParams
+        from qdrant_client.http.models import SparseVectorParams, VectorParams
 
         sparse_embeddings = FastEmbedSparse(model_name="Qdrant/bm25")
 
@@ -29,7 +33,7 @@ class TestQdrant:
         dim = len(embeddings.embed_query("hello"))
         client.create_collection(
             collection_name="my_documents",
-            vectors_config={"dense": VectorParams(size=dim, distance=Distance.COSINE)},
+            vectors_config={"dense": VectorParams(size=dim, distance="Cosine")},
             sparse_vectors_config={
                 "sparse": SparseVectorParams(index=models.SparseIndexParams(on_disk=False))
             },
@@ -51,12 +55,12 @@ class TestQdrant:
         from langchain_core.documents import Document
 
         document_1 = Document(
-            page_content="I had chocolate chip pancakes and scrambled eggs for breakfast this morning.",
+            page_content="I had chocolate chip pancakes and scrambled eggs for breakfast this morning.",  # noqa: E501
             metadata={"source": "tweet"},
         )
 
         document_2 = Document(
-            page_content="The weather forecast for tomorrow is cloudy and overcast, with a high of 62 degrees.",
+            page_content="The weather forecast for tomorrow is cloudy and overcast, with a high of 62 degrees.",  # noqa: E501
             metadata={"source": "news"},
         )
 
@@ -91,14 +95,12 @@ class TestQdrant:
 
         # With filter
         # filter works little different (Go through proper docs)
-        query = "LangChain provides abstractions to make working with LLMs easy",
+        query = ("LangChain provides abstractions to make working with LLMs easy",)
         found_docs = vector_store.similarity_search(query, k=2)
         print(found_docs)
 
         # Search With score
-        results = vector_store.similarity_search_with_score(
-            "Will it be hot tomorrow?", k=1
-        )
+        results = vector_store.similarity_search_with_score("Will it be hot tomorrow?", k=1)
         for res, score in results:
             print(f"* [SIM={score:3f}] {res.page_content} [{res.metadata}]")
 

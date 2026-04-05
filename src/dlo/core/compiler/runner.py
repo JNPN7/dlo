@@ -1,6 +1,7 @@
 """
 Run the compiled project with the dependents
 """
+
 import logging
 
 from functools import cached_property
@@ -162,7 +163,8 @@ class Runner:
 
             # Get cte of dependents of the node
             filtered_node_extra_ctes = [
-                injected_cte for injected_cte in node.extra_ctes
+                injected_cte
+                for injected_cte in node.extra_ctes
                 if injected_cte.id not in dependents
             ]
             extra_ctes.extend(filtered_node_extra_ctes)
@@ -174,9 +176,7 @@ class Runner:
 
         # Build compiled SQL
         if extra_ctes:
-            compiled_code = (
-                "WITH " + ", \n".join(cte.sql for cte in extra_ctes) + f"\n\n{query}"
-            )
+            compiled_code = "WITH " + ", \n".join(cte.sql for cte in extra_ctes) + f"\n\n{query}"
         else:
             compiled_code = query
 

@@ -25,7 +25,7 @@ class RegisterApp:
         project: Project,
         log_level: str = "ERROR",
         log_file: Optional[str] = None,
-        dev_mode: bool = False
+        dev_mode: bool = False,
     ):
         """Register FastAPI App"""
         self._log_level = log_level
@@ -60,8 +60,7 @@ class RegisterApp:
     async def startup_event(self, app_instance: FastAPI):
         app_instance.state.project = self._project
 
-    async def shutdown_event(self, app_instance: FastAPI):
-        ...
+    async def shutdown_event(self, app_instance: FastAPI): ...
 
     @asynccontextmanager
     async def lifespan(self, app_instance: FastAPI):
@@ -103,6 +102,7 @@ class RegisterApp:
         """
         Register routes for hygines like health
         """
+
         @self.app.get("/api/health")
         async def health_check():
             return {"status": "healthy", "service": "dlo-api"}
