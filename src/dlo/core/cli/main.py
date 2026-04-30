@@ -164,13 +164,15 @@ def serve(ctx: click.Context, *args, **kwargs):
     reload = ctx.obj.get("reload")
     workers = ctx.obj.get("workers")
 
+    # TODO: Next JS will not work as React and runtime cannot be attach to Fastapi
+    # For prod mode make necessary changes
     if dev_mode:
         click.echo("Starting DLO UI server in development mode...")
         click.echo(f"  API Server: http://{host}:{port}")
         click.echo(f"  API Docs:   http://{host}:{port}/api/docs")
         click.echo("")
-        click.echo("Run 'npm run dev' in src/dlo/ui/ to start the React dev server.")
-        click.echo("The React app will proxy API requests to this server.")
+        click.echo("Run 'npm run dev' in src/dlo/ui/ to start the Next.js dev server.")
+        click.echo("The Next.js app will proxy API requests to this server.")
     else:
         click.echo("Starting DLO UI server...")
         click.echo(f"  UI:       http://{host}:{port}")

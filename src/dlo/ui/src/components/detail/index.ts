@@ -1,1 +1,0 @@
-export { ColumnTable } from './ColumnTable';
