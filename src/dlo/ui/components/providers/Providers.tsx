@@ -12,7 +12,7 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <QueryProvider>
-      <ThemeProvider defaultTheme="light" storageKey="dlo-ui-theme">
+      <ThemeProvider defaultTheme="system">
         <ManifestProvider>{children}</ManifestProvider>
       </ThemeProvider>
     </QueryProvider>

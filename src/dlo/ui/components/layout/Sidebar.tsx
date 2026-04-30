@@ -14,14 +14,14 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/ScrollArea";
-import { Separator } from "@/components/ui/Separator";
-import { Button } from "@/components/ui/Button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/Tooltip";
+} from "@/components/ui/tooltip";
 import { useSidebar } from "@/hooks";
 
 const navigation = [
@@ -35,7 +35,7 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { isCollapsed, setIsCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed, setIsCollapsed, toggleSidebar, mounted } = useSidebar();
   const [isHoveringItem, setIsHoveringItem] = React.useState(false);
 
   // Handle click on sidebar background when collapsed - expand if not hovering an item
@@ -50,11 +50,17 @@ export function Sidebar() {
     }
   };
 
+  // Before mount, use CSS classes to control visibility (via data-sidebar-collapsed attribute)
+  // After mount, use React state for dynamic control
+  const showCollapsed = mounted ? isCollapsed : false;
+
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r border-border bg-sidebar-background transition-all duration-300 ease-in-out",
-        isCollapsed ? "w-16 cursor-e-resize" : "w-64"
+        "sidebar-container flex h-full flex-col border-r border-border bg-sidebar-background transition-all duration-300 ease-in-out",
+        // After mount, React controls the width; before mount, CSS handles it via data attribute
+        mounted && (isCollapsed ? "w-16 cursor-e-resize" : "w-64"),
+        !mounted && "w-64" // Default for SSR, CSS will override if data-sidebar-collapsed is set
       )}
       onClick={handleSidebarClick}
     >
@@ -62,7 +68,7 @@ export function Sidebar() {
       <div
         className={cn(
           "flex h-16 items-center border-b border-border",
-          isCollapsed ? "justify-center px-2" : "justify-between px-4"
+          showCollapsed ? "justify-center px-2" : "justify-between px-4"
         )}
       >
         <div className="flex items-center gap-2">
@@ -73,11 +79,24 @@ export function Sidebar() {
               alt="DLO"
             />
           </div>
-          {!isCollapsed && (
-            <span className="text-xl font-bold text-sidebar-foreground">DLO</span>
-          )}
+          {/* Expanded: show title */}
+          <span
+            className={cn(
+              "text-xl font-bold text-sidebar-foreground",
+              showCollapsed && "hidden",
+              !mounted && "sidebar-expanded-only"
+            )}
+          >
+            DLO
+          </span>
         </div>
-        {!isCollapsed && (
+        {/* Expanded: show collapse button */}
+        <div
+          className={cn(
+            showCollapsed && "hidden",
+            !mounted && "sidebar-expanded-only"
+          )}
+        >
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -95,12 +114,18 @@ export function Sidebar() {
             </TooltipTrigger>
             <TooltipContent side="right">Collapse sidebar</TooltipContent>
           </Tooltip>
-        )}
+        </div>
       </div>
 
       {/* Search */}
-      <div className={cn("py-4", isCollapsed ? "px-2" : "px-4")}>
-        {isCollapsed ? (
+      <div className={cn("py-4", showCollapsed ? "px-2" : "px-4")}>
+        {/* Collapsed search */}
+        <div
+          className={cn(
+            !showCollapsed && "hidden",
+            !mounted && "sidebar-collapsed-only hidden"
+          )}
+        >
           <Tooltip>
             <TooltipTrigger asChild>
               <Link
@@ -118,7 +143,14 @@ export function Sidebar() {
             </TooltipTrigger>
             <TooltipContent side="right">Search</TooltipContent>
           </Tooltip>
-        ) : (
+        </div>
+        {/* Expanded search */}
+        <div
+          className={cn(
+            showCollapsed && "hidden",
+            !mounted && "sidebar-expanded-only"
+          )}
+        >
           <Link
             href="/search"
             className={cn(
@@ -132,56 +164,63 @@ export function Sidebar() {
               <span className="text-xs">/</span>
             </kbd>
           </Link>
-        )}
+        </div>
       </div>
 
       <Separator />
 
       {/* Navigation */}
-      <ScrollArea className={cn("flex-1 py-4", isCollapsed ? "px-2" : "px-4")}>
+      <ScrollArea className={cn("flex-1 py-4", showCollapsed ? "px-2" : "px-4")}>
         <nav className="flex flex-col gap-1">
           {navigation.map((item) => {
             const isActive =
               item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
 
-            if (isCollapsed) {
-              return (
-                <Tooltip key={item.name}>
-                  <TooltipTrigger asChild>
-                    <Link
-                      href={item.href}
-                      className={cn(
-                        "flex h-10 w-full items-center justify-center rounded-lg transition-colors",
-                        isActive
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      )}
-                      onMouseEnter={() => setIsHoveringItem(true)}
-                      onMouseLeave={() => setIsHoveringItem(false)}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <item.icon className="h-4 w-4" />
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">{item.name}</TooltipContent>
-                </Tooltip>
-              );
-            }
-
             return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.name}
-              </Link>
+              <React.Fragment key={item.name}>
+                {/* Collapsed nav item */}
+                <div
+                  className={cn(
+                    !showCollapsed && "hidden",
+                    !mounted && "sidebar-collapsed-only hidden"
+                  )}
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          "flex h-10 w-full items-center justify-center rounded-lg transition-colors",
+                          isActive
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                        )}
+                        onMouseEnter={() => setIsHoveringItem(true)}
+                        onMouseLeave={() => setIsHoveringItem(false)}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <item.icon className="h-4 w-4" />
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">{item.name}</TooltipContent>
+                  </Tooltip>
+                </div>
+                {/* Expanded nav item */}
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    showCollapsed && "hidden",
+                    !mounted && "sidebar-expanded-only"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.name}
+                </Link>
+              </React.Fragment>
             );
           })}
         </nav>
@@ -189,8 +228,14 @@ export function Sidebar() {
 
       {/* Footer */}
       <Separator />
-      <div className={cn("p-4", isCollapsed && "px-2")}>
-        {isCollapsed ? (
+      <div className={cn("p-4", showCollapsed && "px-2")}>
+        {/* Collapsed footer */}
+        <div
+          className={cn(
+            !showCollapsed && "hidden",
+            !mounted && "sidebar-collapsed-only hidden"
+          )}
+        >
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex h-10 items-center justify-center rounded-lg bg-muted cursor-default">
@@ -199,12 +244,18 @@ export function Sidebar() {
             </TooltipTrigger>
             <TooltipContent side="right">Data Lineage Orchestrator v0.0.1</TooltipContent>
           </Tooltip>
-        ) : (
-          <div className="rounded-lg bg-muted p-3">
-            <p className="text-xs text-muted-foreground">Data Lineage Orchestrator</p>
-            <p className="text-xs font-medium text-foreground">v0.0.1</p>
-          </div>
-        )}
+        </div>
+        {/* Expanded footer */}
+        <div
+          className={cn(
+            "rounded-lg bg-muted p-3",
+            showCollapsed && "hidden",
+            !mounted && "sidebar-expanded-only"
+          )}
+        >
+          <p className="text-xs text-muted-foreground">Data Lineage Orchestrator</p>
+          <p className="text-xs font-medium text-foreground">v0.0.1</p>
+        </div>
       </div>
     </div>
   );

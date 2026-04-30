@@ -1,48 +1,54 @@
 "use client";
 
 import * as React from "react";
-
-const SIDEBAR_STORAGE_KEY = "sidebar-collapsed";
+import { STORAGE_KEYS, DATA_ATTRIBUTES } from "@/lib/constants";
 
 interface SidebarContextValue {
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
   toggleSidebar: () => void;
+  mounted: boolean;
 }
 
 const SidebarContext = React.createContext<SidebarContextValue | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
+  // Always start with false on server and client to avoid hydration mismatch
   const [isCollapsed, setIsCollapsedState] = React.useState(false);
-  const [isHydrated, setIsHydrated] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
 
-  // Load persisted state from localStorage on mount (client-side only)
+  // On mount, read the actual state from localStorage
   React.useEffect(() => {
-    const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
-    if (stored !== null) {
-      setIsCollapsedState(stored === "true");
+    const stored = localStorage.getItem(STORAGE_KEYS.SIDEBAR_COLLAPSED);
+    if (stored === "true") {
+      setIsCollapsedState(true);
     }
-    setIsHydrated(true);
+    setMounted(true);
   }, []);
 
-  // Persist state to localStorage whenever it changes
+  // Persist state to localStorage and update DOM attribute
   const setIsCollapsed = React.useCallback((collapsed: boolean) => {
     setIsCollapsedState(collapsed);
-    localStorage.setItem(SIDEBAR_STORAGE_KEY, String(collapsed));
+    localStorage.setItem(STORAGE_KEYS.SIDEBAR_COLLAPSED, String(collapsed));
+    if (collapsed) {
+      document.documentElement.setAttribute(DATA_ATTRIBUTES.SIDEBAR_COLLAPSED, "true");
+    } else {
+      document.documentElement.removeAttribute(DATA_ATTRIBUTES.SIDEBAR_COLLAPSED);
+    }
   }, []);
 
   const toggleSidebar = React.useCallback(() => {
     setIsCollapsed(!isCollapsed);
   }, [isCollapsed, setIsCollapsed]);
 
-  // Prevent hydration mismatch by returning consistent initial state
   const value = React.useMemo(
     () => ({
-      isCollapsed: isHydrated ? isCollapsed : false,
+      isCollapsed,
       setIsCollapsed,
       toggleSidebar,
+      mounted,
     }),
-    [isCollapsed, isHydrated, setIsCollapsed, toggleSidebar]
+    [isCollapsed, setIsCollapsed, toggleSidebar, mounted]
   );
 
   return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;

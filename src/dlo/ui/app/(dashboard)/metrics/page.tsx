@@ -3,8 +3,8 @@
 import { BarChart3 } from "lucide-react";
 import { Header } from "@/components/layout";
 import { MetricCard } from "@/components/catalog";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useManifest } from "@/hooks";
 
 function MetricCardSkeleton() {

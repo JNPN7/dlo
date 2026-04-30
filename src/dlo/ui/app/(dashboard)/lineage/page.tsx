@@ -18,8 +18,8 @@ import "@xyflow/react/dist/style.css";
 
 import { Header } from "@/components/layout";
 import { nodeTypes } from "@/components/lineage";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Skeleton } from "@/components/ui/Skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useManifest } from "@/hooks";
 
 // Simple layout algorithm
