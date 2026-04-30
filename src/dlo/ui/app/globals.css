@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+/* Pink Theme via @theme directive for Tailwind v4 */
+@theme {
+  /* Light mode colors */
+  --color-background: oklch(100% 0 0);
+  --color-foreground: oklch(20% 0.02 340);
+  --color-card: oklch(100% 0 0);
+  --color-card-foreground: oklch(20% 0.02 340);
+  --color-popover: oklch(100% 0 0);
+  --color-popover-foreground: oklch(20% 0.02 340);
+  --color-primary: oklch(65% 0.2 330);
+  --color-primary-foreground: oklch(100% 0 0);
+  --color-secondary: oklch(96% 0.02 330);
+  --color-secondary-foreground: oklch(45% 0.15 330);
+  --color-muted: oklch(96% 0.01 330);
+  --color-muted-foreground: oklch(50% 0.02 330);
+  --color-accent: oklch(95% 0.08 330);
+  --color-accent-foreground: oklch(45% 0.15 330);
+  --color-destructive: oklch(55% 0.2 25);
+  --color-destructive-foreground: oklch(100% 0 0);
+  --color-border: oklch(92% 0.02 330);
+  --color-input: oklch(92% 0.02 330);
+  --color-ring: oklch(65% 0.2 330);
+  --color-sidebar-background: oklch(98% 0.01 330);
+  --color-sidebar-foreground: oklch(20% 0.02 340);
+  --color-sidebar-primary: oklch(65% 0.2 330);
+  --color-sidebar-primary-foreground: oklch(100% 0 0);
+  --color-sidebar-accent: oklch(95% 0.08 330);
+  --color-sidebar-accent-foreground: oklch(45% 0.15 330);
+  --color-sidebar-border: oklch(92% 0.02 330);
+  --color-sidebar-ring: oklch(65% 0.2 330);
+
+  --radius: 0.5rem;
+}
+
+/* Dark mode overrides */
+.dark {
+  --color-background: oklch(12% 0.02 340);
+  --color-foreground: oklch(98% 0.01 330);
+  --color-card: oklch(15% 0.02 340);
+  --color-card-foreground: oklch(98% 0.01 330);
+  --color-popover: oklch(15% 0.02 340);
+  --color-popover-foreground: oklch(98% 0.01 330);
+  --color-primary: oklch(70% 0.2 330);
+  --color-primary-foreground: oklch(12% 0.02 340);
+  --color-secondary: oklch(20% 0.02 330);
+  --color-secondary-foreground: oklch(90% 0.02 330);
+  --color-muted: oklch(20% 0.015 330);
+  --color-muted-foreground: oklch(65% 0.02 330);
+  --color-accent: oklch(25% 0.04 330);
+  --color-accent-foreground: oklch(75% 0.15 330);
+  --color-destructive: oklch(50% 0.18 25);
+  --color-destructive-foreground: oklch(100% 0 0);
+  --color-border: oklch(25% 0.02 330);
+  --color-input: oklch(25% 0.02 330);
+  --color-ring: oklch(70% 0.2 330);
+  --color-sidebar-background: oklch(15% 0.02 340);
+  --color-sidebar-foreground: oklch(98% 0.01 330);
+  --color-sidebar-primary: oklch(70% 0.2 330);
+  --color-sidebar-primary-foreground: oklch(12% 0.02 340);
+  --color-sidebar-accent: oklch(25% 0.04 330);
+  --color-sidebar-accent-foreground: oklch(75% 0.15 330);
+  --color-sidebar-border: oklch(25% 0.02 330);
+  --color-sidebar-ring: oklch(70% 0.2 330);
+}
+
+/* Base styles */
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--color-primary) 30%, transparent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--color-primary) 50%, transparent);
+}
+
+/* React Flow custom styles */
+.react-flow__node {
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.react-flow__controls {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.react-flow__controls-button {
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.react-flow__controls-button:hover {
+  background: var(--color-accent);
+}
+
+.react-flow__minimap {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes pulse-pink {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-primary) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+.animate-pulse-pink {
+  animation: pulse-pink 2s ease-in-out infinite;
+}

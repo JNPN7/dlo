@@ -109,36 +109,58 @@ class RegisterApp:
 
     def register_ui(self) -> None:
         """
-        Register UI (serves React build in production mode)
+        Register UI (serves Next.js static export in production mode)
         """
         if self._dev_mode:
             return
 
-        # static dir path
-        static_dir = Path(__file__).parent.parent / "ui" / "dist"
+        # Next.js static export directory (out/)
+        static_dir = Path(__file__).parent.parent / "ui" / "out"
         if not static_dir.exists():
             return
 
-        # Mount static assets (JS, CSS, images)
+        # Mount static assets directory (_next/ contains JS, CSS chunks)
+        next_static_dir = static_dir / "_next"
+        if next_static_dir.exists():
+            self.app.mount("/_next", StaticFiles(directory=str(next_static_dir)), name="_next")
+
+        # Mount public assets directory
         assets_dir = static_dir / "assets"
         if assets_dir.exists():
             self.app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 
-        index_path = static_dir / "index.html"
-
+        # TODO: Next JS will not work as React and runtime cannot be attach to Fastapi
+        # For prod mode make necessary changes
         @self.app.get("/{full_path:path}")
         async def serve_spa(full_path: str):
             # Skip API routes
             if full_path.startswith("api/"):
                 raise HTTPException(status_code=404, detail="API endpoint not found")
 
-            if not index_path.exists():
+            # Try to find the corresponding HTML file for the route
+            # Next.js static export creates HTML files for each route
+            if full_path == "" or full_path == "/":
+                html_path = static_dir / "index.html"
+            else:
+                # Remove trailing slash and try route-specific HTML
+                clean_path = full_path.rstrip("/")
+                html_path = static_dir / f"{clean_path}.html"
+
+                # If not found, try directory with index.html (for trailing slash routes)
+                if not html_path.exists():
+                    html_path = static_dir / clean_path / "index.html"
+
+                # Fall back to root index.html for client-side routing
+                if not html_path.exists():
+                    html_path = static_dir / "index.html"
+
+            if not html_path.exists():
                 raise HTTPException(
                     status_code=404,
                     detail="UI not built. Run 'npm run build' in src/dlo/ui/ first.",
                 )
 
-            return FileResponse(str(index_path))
+            return FileResponse(str(html_path))
 
     def register_exception(self) -> None:
         """
