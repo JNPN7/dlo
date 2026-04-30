@@ -1,12 +1,52 @@
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional, get_args
 
 import yaml
 
 from dlo.common.exceptions import errors
 from dlo.common.schema import SchemaMixin
+
+Scope = Literal["name", "description", "tags"]
+
+
+@dataclass
+class VectorCollectionConfig(SchemaMixin):
+    distance: Optional[str] = field(default=None)
+    collection: str = field(default="dlo_vector_search")
+
+
+@dataclass
+class Aggregation(SchemaMixin):
+    type: Literal["max", "avg"] = field(default="avg")
+    min_match: int = field(default=1)
+    top_k: int = field(default=3)
+
+
+@dataclass
+class VectorScopeConfig(SchemaMixin):
+    weight: float = field(default=1)
+    aggregation: Aggregation = field(default_factory=Aggregation)
+
+    def __post_init__(self):
+        if not isinstance(self.weight, (int, float)):
+            raise TypeError("Weight must be a number")
+
+        if not 0 <= self.weight <= 1:
+            raise errors.DloConfigError("Weight must be between 0 and 1")
+
+
+@dataclass
+class VectorSearchConfig(SchemaMixin):
+    embedding: str
+    vector_store: str
+    collection: VectorCollectionConfig = field(default_factory=VectorCollectionConfig)
+    scope: dict[Scope, VectorScopeConfig] = field(
+        default_factory=lambda: {s: VectorScopeConfig() for s in get_args(Scope)}
+    )
+    aggregation: Aggregation = field(default_factory=Aggregation)
+    top_k: int = field(default=5)
 
 
 @dataclass
@@ -15,8 +55,9 @@ class Project(SchemaMixin):
     project_root: str
     version: str
     profile: str
-    memory: Optional[list[str]] = None
+    memory: Optional[list[str]] = field(default=None)
     runtime_config: dict = field(default_factory=dict)
+    vector_search: Optional[VectorSearchConfig] = field(default=None)
 
     @cached_property
     def project_root_path(self):
@@ -65,7 +106,13 @@ class Connection(SchemaMixin):
 @dataclass
 class Embeddings(SchemaMixin):
     provider: str
-    config: dict
+    config: dict = field(default_factory=dict)
+
+
+@dataclass
+class VectorStore(SchemaMixin):
+    type: str
+    config: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -73,6 +120,7 @@ class Profile(SchemaMixin):
     engine: Engine
     connections: Optional[dict[str, Connection]] = field(default=None)
     embeddings: Optional[dict[str, Embeddings]] = field(default=None)
+    vector_store: Optional[dict[str, VectorStore]] = field(default=None)
 
     @classmethod
     def __from_project__(cls, project: Project):

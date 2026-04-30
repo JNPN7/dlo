@@ -40,7 +40,7 @@ class Runner:
         }
 
     @cached_property
-    def graph(self):
+    def graph(self) -> Graph:
         graph = Graph()
 
         for node in self.nodes.values():
@@ -54,30 +54,30 @@ class Runner:
 
         return graph
 
-    def draw_layer(self):
+    def draw_layer(self) -> None:
         graph = self.graph
         figure_name = self.project.project_root_path / COMPILED_GRAPH_FIG_PATH_RUN
 
         graph.draw_layer(nodes=self.nodes, figure_name=figure_name)
 
-    def run_node(self, node_unique_id):
+    def run_node(self, node_unique_id) -> None:
         node = self.nodes.get(node_unique_id)
         self.adapter.create_table(node)
 
-    def run(self):
+    def run(self) -> None:
         self.draw_layer()
 
         for node_unique_id in self.graph.topoligical_sort:
             self.run_node(node_unique_id)
 
     # TODO: Duplicate Scheduling
-    def draw_cron_dependents_graph(self, graph: Graph, cron: str):
+    def draw_cron_dependents_graph(self, graph: Graph, cron: str) -> None:
         figure_name = self.project.project_root_path / f"{cron}.png"
         nodes = {_id: node for _id, node in self.nodes.items() if _id in graph.nodes}
 
         graph.draw_layer(nodes, figure_name=figure_name)
 
-    def schedule(self, draw: bool = True):
+    def schedule(self, draw: bool = True) -> None:
         # TODO: Implement storing jobs info in file and use it to update job, pause and resume
         # TODO: Duplicate Scheduling
         schedule_cron = {}
@@ -140,7 +140,7 @@ class Runner:
 
         log.info("Schedule cron nodes: %s", schedule_cron)
 
-    def compile_query(self, query: str, graph_compiler: GraphCompiler):
+    def compile_query(self, query: str, graph_compiler: GraphCompiler) -> str:
         sql_parser = SqlParser(query)
         if not sql_parser.is_only_select:
             raise errors.InvalidRequestError("Query must be only select statements")

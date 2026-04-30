@@ -2,13 +2,15 @@
 Embeddings classes with factory
 """
 
+from langchain_core.embeddings import Embeddings
+
 from dlo.common.exceptions import errors
 
 
 # TODO: Testing all the embeddings provider and Add new
-class Embeddings:
+class EmbeddingsFactory:
     @classmethod
-    def create(cls, **kwargs):
+    def create(cls, **kwargs) -> Embeddings:
         """Create a Embeddings Factory"""
         provider = kwargs.pop("provider")
         try:

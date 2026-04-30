@@ -31,7 +31,7 @@ class SqlParser:
             # or potentially an incomplete one.
             return False
 
-    def extract_table(self):
+    def extract_table(self) -> set:
         # Get CTE names so we can exclude them
         ctes = self.expr.find_all(sqlglot.exp.CTE)
         cte_names = {cte.alias_or_name for cte in ctes}

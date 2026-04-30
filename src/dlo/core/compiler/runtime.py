@@ -55,3 +55,19 @@ class Runtime:
     def execute_query(self, query: str):
         result = self.runner.execute_query(query=query, graph_compiler=self.graph_compiler)
         return result
+
+    def vector_search_init(self):
+        from dlo.core.search.vector_search import VectorSearch
+
+        vector_search = VectorSearch(
+            manifest=self.manifest, project=self.project, profile=self.profile
+        )
+        vector_search.initialize()
+
+    def vector_search_run(self, query: str):
+        from dlo.core.search.vector_search import VectorSearch
+
+        vector_search = VectorSearch(
+            manifest=self.manifest, project=self.project, profile=self.profile
+        )
+        return vector_search.search(query=query)

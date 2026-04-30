@@ -39,7 +39,7 @@ class GraphCompiler:
         self.nodes: NodeMap = {node.unique_id: node for node in chain(*collections)}
 
     @cached_property
-    def graph(self):
+    def graph(self) -> Graph:
         graph = Graph()
 
         for node in self.nodes.keys():
@@ -95,7 +95,7 @@ class GraphCompiler:
 
         return formatted_dependents
 
-    def get_dependents_of_nodes(self):
+    def get_dependents_of_nodes(self) -> Mapping[NodeId, list[str]]:
         dependents: Mapping[NodeId, list[str]] = {}
         for node in self.nodes.values():
             # We requires dependent of model only as source don't have dependents
@@ -109,7 +109,7 @@ class GraphCompiler:
 
         return dependents
 
-    def draw_layer(self):
+    def draw_layer(self) -> None:
         graph = self.graph
         figure_name = self.project.project_root_path / COMPILED_GRAPH_FIG_PATH_NODES
 
@@ -198,13 +198,13 @@ class GraphCompiler:
         return compiled_path
 
     # TODO: Duplicate Scheduling
-    def draw_cron_dependents_graph(self, graph: Graph, cron: str):
+    def draw_cron_dependents_graph(self, graph: Graph, cron: str) -> None:
         figure_name = self.project.project_root_path / f"{cron}.png"
         nodes = {_id: node for _id, node in self.nodes.items() if _id in graph.nodes}
 
         graph.draw_layer(nodes, figure_name=figure_name)
 
-    def schedule(self, draw: bool = True):
+    def schedule(self, draw: bool = True) -> None:
         # TODO: Duplicate Scheduling
         schedule_cron = {}
 
@@ -229,7 +229,7 @@ class GraphCompiler:
                 for predecessor_node_unique_id in cron_graph.predecessors(node.unique_id):
                     node.schedule_depends_on.nodes.append(predecessor_node_unique_id)
 
-    def compile(self):
+    def compile(self) -> None:
         self.draw_layer()
 
         for node_unique_id in self.graph.topoligical_sort:

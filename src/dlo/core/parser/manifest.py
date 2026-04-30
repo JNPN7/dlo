@@ -48,7 +48,7 @@ class FileReaderFromFileSystem:
         ...     data = reader.read_yaml(file)
     """
 
-    def __init__(self, root_dir: str) -> None:
+    def __init__(self, root_dir: str):
         """
         Initialize the file reader with the root directory path.
 
@@ -206,7 +206,7 @@ class ManifestLoader:
         >>> print(loader.manifest)
     """
 
-    def __init__(self, project: Project) -> None:
+    def __init__(self, project: Project):
         """
         Initialize the ManifestLoader with a project configuration.
 
