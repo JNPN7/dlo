@@ -8,8 +8,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/Table";
-import { Badge } from "@/components/ui/Badge";
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 interface ColumnTableProps {
   columns: Column[];

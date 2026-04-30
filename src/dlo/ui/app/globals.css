@@ -156,3 +156,21 @@ body {
 .animate-pulse-pink {
   animation: pulse-pink 2s ease-in-out infinite;
 }
+
+/* Sidebar collapse state - CSS handles initial state before React hydration */
+html[data-sidebar-collapsed="true"] .sidebar-container {
+  width: 4rem; /* w-16 */
+  cursor: e-resize;
+}
+
+html[data-sidebar-collapsed="true"] .sidebar-container .sidebar-expanded-only {
+  display: none;
+}
+
+html[data-sidebar-collapsed="true"] .sidebar-container .sidebar-collapsed-only {
+  display: flex;
+}
+
+html:not([data-sidebar-collapsed="true"]) .sidebar-container .sidebar-collapsed-only {
+  display: none;
+}

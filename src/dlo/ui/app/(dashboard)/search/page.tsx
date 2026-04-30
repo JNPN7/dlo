@@ -5,12 +5,12 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search as SearchIcon, Database, Box, GitBranch, BarChart3, X } from "lucide-react";
 import { Header } from "@/components/layout";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { Card, CardContent } from "@/components/ui/Card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
-import { Skeleton } from "@/components/ui/Skeleton";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useManifest, type SearchResult } from "@/hooks";
 
 const resourceIcons: Record<string, typeof Database> = {
@@ -148,13 +148,13 @@ function SearchContent() {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col">
       <Header title="Search" description="Find resources across your project" />
 
       <div className="p-6 space-y-6">
         {/* Search Input */}
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input

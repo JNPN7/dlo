@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { Database, Tag, Columns, ExternalLink } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import type { Source } from "@/types/manifest";
 
 interface SourceCardProps {

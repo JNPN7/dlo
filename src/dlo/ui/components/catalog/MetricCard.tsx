@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { BarChart3, Tag, Code, ExternalLink } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import type { Metric } from "@/types/manifest";
 
 interface MetricCardProps {
