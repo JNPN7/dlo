@@ -195,5 +195,53 @@ def serve(ctx: click.Context, *args, **kwargs):
     )
 
 
+@cli.group("search")
+def search():
+    """
+    An Search tool for your semantic layer containing vector search
+    """
+
+
+@search.command("init")
+@click.pass_context
+@d.project
+@d.profile
+@d.lifespan
+@d.cached_manifest
+def search_init(ctx: click.Context, *args, **kwargs):
+    """Initializing vector store."""
+    click.echo("Initializing vector store...")
+
+    project = ctx.obj.get("project")
+    profile = ctx.obj.get("profile")
+    manifest = ctx.obj.get("cached_manifest")
+
+    runtime = Runtime(project=project, profile=profile, manifest=manifest)
+    runtime.vector_search_init()
+
+
+@search.command("run")
+@click.pass_context
+@d.project
+@d.profile
+@d.lifespan
+@d.cached_manifest
+@click.argument("query")
+def search_run(ctx: click.Context, *args, **kwargs):
+    """Run vector search."""
+    click.echo("Running vector search...")
+
+    project = ctx.obj.get("project")
+    profile = ctx.obj.get("profile")
+    manifest = ctx.obj.get("cached_manifest")
+
+    query = kwargs.get("query")
+
+    runtime = Runtime(project=project, profile=profile, manifest=manifest)
+    result = runtime.vector_search_run(query=query)
+
+    click.echo(result)
+
+
 if __name__ == "__main__":
     cli()
