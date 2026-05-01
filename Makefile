@@ -24,3 +24,12 @@ format:
 
 build:
 	uv build
+
+ui:
+	@npm run dev --prefix src/dlo/ui
+
+ui-build:
+	@npm run build --prefix src/dlo/ui
+
+ui-start:
+	@npm run start --prefix src/dlo/ui
