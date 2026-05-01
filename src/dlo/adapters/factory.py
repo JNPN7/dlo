@@ -8,7 +8,7 @@ from dlo.common.exceptions import errors
 
 log = logging.getLogger("__name__")
 
-ADAPTERS_PLUGIN_DIRS = ["dlo.adapters.adapters"]
+ADAPTERS_PLUGIN_DIRS = ["dlo.adapters.impl"]
 
 
 class ModuleInterface:
