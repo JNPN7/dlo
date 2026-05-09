@@ -1,3 +1,5 @@
+import logging
+
 from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
@@ -7,6 +9,9 @@ import yaml
 
 from dlo.common.exceptions import errors
 from dlo.common.schema import SchemaMixin
+
+# Configure module logger
+log = logging.getLogger(__name__)
 
 Scope = Literal["name", "description", "tags"]
 
@@ -116,11 +121,18 @@ class VectorStore(SchemaMixin):
 
 
 @dataclass
+class ChatModel(SchemaMixin):
+    provider: str
+    config: dict = field(default_factory=dict)
+
+
+@dataclass
 class Profile(SchemaMixin):
     engine: Engine
     connections: Optional[dict[str, Connection]] = field(default=None)
     embeddings: Optional[dict[str, Embeddings]] = field(default=None)
     vector_store: Optional[dict[str, VectorStore]] = field(default=None)
+    providers: Optional[dict[str, ChatModel]] = field(default=None)
 
     @classmethod
     def __from_project__(cls, project: Project):
@@ -137,6 +149,7 @@ class Profile(SchemaMixin):
 
             for path in candidates:
                 if path.exists():
+                    log.debug(f"Profile loaded from file: {path}")
                     return path
 
             raise errors.DloConfigError(
@@ -152,8 +165,8 @@ class Profile(SchemaMixin):
 
         if profile_config is None:
             raise errors.DloConfigError("Profile config file is empty")
-        profile_config_of_name = profile_config.get(project.profile)
 
+        profile_config_of_name = profile_config.get(project.profile)
         if profile_config_of_name is None:
             raise errors.DloConfigError(f"Profile config for {project.profile} doesn't exists")
 

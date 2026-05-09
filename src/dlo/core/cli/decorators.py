@@ -90,8 +90,7 @@ def cached_manifest(func):
 
         manifest = None
 
-        cached_manifest = kwargs.get("cached_manifest")
-        if cached_manifest:
+        if kwargs.get("cached_manifest"):
             manifest = Manifest.__from_project__(project)
 
         ctx.obj["cached_manifest"] = manifest

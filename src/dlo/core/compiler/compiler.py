@@ -23,7 +23,7 @@ from dlo.core.models.resources import (
     ScheduledResourceMixin,
     Source,
 )
-from dlo.core.parser.sql_parser import SqlParser
+from dlo.core.parser import SqlParser
 
 
 class GraphCompiler:

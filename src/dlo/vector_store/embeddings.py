@@ -24,77 +24,67 @@ class EmbeddingsFactory:
         """Create a embeddings from openai"""
         from langchain_openai import AzureOpenAIEmbeddings
 
-        embeddings = AzureOpenAIEmbeddings(**config)
-        return embeddings
+        return AzureOpenAIEmbeddings(**config)
 
     @classmethod
     def from_azure(cls, config: dict):
         """Create a embeddings from azure"""
         from langchain_openai import AzureOpenAIEmbeddings
 
-        embeddings = AzureOpenAIEmbeddings(**config)
-        return embeddings
+        return AzureOpenAIEmbeddings(**config)
 
     @classmethod
     def from_gemini(cls, config: dict):
         """Create a embeddings from gemini"""
         from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-        embeddings = GoogleGenerativeAIEmbeddings(**config)
-        return embeddings
+        return GoogleGenerativeAIEmbeddings(**config)
 
     @classmethod
     def from_vertex(cls, config: dict):
         """Create a embeddings from vertex"""
         from langchain_google_vertexai import VertexAIEmbeddings
 
-        embeddings = VertexAIEmbeddings(**config)
-        return embeddings
+        return VertexAIEmbeddings(**config)
 
     @classmethod
     def from_bedrock(cls, config: dict):
         """Create a embeddings from AWS Bedrock"""
         from langchain_aws import BedrockEmbeddings
 
-        embeddings = BedrockEmbeddings(**config)
-        return embeddings
+        return BedrockEmbeddings(**config)
 
     @classmethod
     def from_huggingface(cls, config: dict):
         """Create a embeddings from Huggingface"""
         from langchain_huggingface import HuggingFaceEmbeddings
 
-        embeddings = HuggingFaceEmbeddings(**config)
-        return embeddings
+        return HuggingFaceEmbeddings(**config)
 
     @classmethod
     def from_ollama(cls, config: dict):
         """Create a embeddings from Ollama"""
         from langchain_ollama import OllamaEmbeddings
 
-        embeddings = OllamaEmbeddings(**config)
-        return embeddings
+        return OllamaEmbeddings(**config)
 
     @classmethod
     def from_cohere(cls, config: dict):
         """Create a embeddings from Cohere"""
         from langchain_cohere import CohereEmbeddings
 
-        embeddings = CohereEmbeddings(**config)
-        return embeddings
+        return CohereEmbeddings(**config)
 
     @classmethod
     def from_mistral(cls, config: dict):
         """Create a embeddings from Mistral"""
         from langchain_mistralai import MistralAIEmbeddings
 
-        embeddings = MistralAIEmbeddings(**config)
-        return embeddings
+        return MistralAIEmbeddings(**config)
 
     @classmethod
     def from_fastembed(cls, config: dict):
         """Create a embeddings from Fastembed (Local)"""
         from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 
-        embeddings = FastEmbedEmbeddings(**config)
-        return embeddings
+        return FastEmbedEmbeddings(**config)

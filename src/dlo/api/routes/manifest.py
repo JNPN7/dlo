@@ -23,12 +23,11 @@ async def get_manifest(project: CProject) -> dict[str, Any]:
     This is the only API endpoint - all data operations
     (filtering, searching, stats, graph building) are handled in the UI.
     """
-    manifest = Manifest.__from_project__(project)
 
-    if manifest is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Manifest not found. Run 'dlo compile' first to generate the manifest.",
-        )
+    if (manifest := Manifest.__from_project__(project)):
+        return manifest.to_dict()
 
-    return manifest.to_dict()
+    raise HTTPException(
+        status_code=404,
+        detail="Manifest not found. Run 'dlo compile' first to generate the manifest.",
+    )
