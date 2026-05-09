@@ -6,7 +6,7 @@ from dlo.core.compiler.compiler import GraphCompiler
 from dlo.core.compiler.runner import Runner
 from dlo.core.config import Profile, Project
 from dlo.core.models.manifest import Manifest
-from dlo.core.parser.manifest import ManifestLoader
+from dlo.core.parser import AgentManifestLoader, ManifestLoader
 
 
 class Runtime:
@@ -30,6 +30,10 @@ class Runtime:
         return AdapterFactory.create(
             **engine.to_dict(), runtime_config=self.project.runtime_config
         )
+
+    @cached_property
+    def agent_manifest(self):
+        return AgentManifestLoader(self.project).load()
 
     @cached_property
     def graph_compiler(self):

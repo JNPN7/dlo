@@ -17,7 +17,7 @@ from dlo.core.models.graph import NodeId
 from dlo.core.models.manifest import Manifest
 from dlo.core.models.resources import InjectedCTE, Model, ModelType
 from dlo.core.models.schedule import Schedule, ScheduleNode
-from dlo.core.parser.sql_parser import SqlParser
+from dlo.core.parser import SqlParser
 from dlo.core.utils.cron import clean_cron
 
 log = logging.getLogger(__name__)

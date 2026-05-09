@@ -90,14 +90,16 @@ class Graph:
         }
 
         def get_node_type(node: Node):
-            if node.resource_type == ResourceTypes.source:
-                return "source"
-            return str(node.type)
+            try:
+                if node.resource_type == ResourceTypes.source:
+                    return "source"
+                return str(node.type)
+            except Exception:
+                return ""
 
         node_color = []
         for node in self.graph.nodes:
-            node_detail = nodes.get(node)
-            if node_detail:
+            if (node_detail := nodes.get(node)):
                 node_type = get_node_type(node_detail)
                 node_color.append(NODE_COLOR_MAP.get(node_type, "#cccccc"))
             else:

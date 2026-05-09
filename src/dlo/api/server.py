@@ -4,6 +4,8 @@ DLO API Server.
 FastAPI application that serves the manifest REST API and the React UI static files.
 """
 
+import os
+
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
@@ -13,16 +15,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from dlo import __version__
 from dlo.common.logger import setup_logger
-from dlo.core.config import Project
+from dlo.core.config import Profile, Project
+from dlo.core.models.agent import AgentManifest
 
 
 class RegisterApp:
     def __init__(
         self,
         project: Project,
+        profile: Profile,
+        agent_manifest: Optional[AgentManifest] = None,
         log_level: str = "ERROR",
         log_file: Optional[str] = None,
         dev_mode: bool = False,
@@ -32,6 +38,12 @@ class RegisterApp:
         self._log_file = log_file
         self._dev_mode = dev_mode
         self._project = project
+        self._profile = profile
+        self._agent_manifest = agent_manifest
+
+        # Used for agents
+        self.checkpointer = None
+        self.checkpointer_context = None
 
         self._app = FastAPI(
             title="DLO API",
@@ -58,9 +70,29 @@ class RegisterApp:
         return self._app
 
     async def startup_event(self, app_instance: FastAPI):
+        """App startup events"""
         app_instance.state.project = self._project
 
-    async def shutdown_event(self, app_instance: FastAPI): ...
+        if self._agent_manifest is not None:
+            path = Path("checkpoint/checkpoint.sqlite")
+            path.parent.mkdir(exist_ok=True)
+
+            self.checkpointer_context = AsyncSqliteSaver.from_conn_string(
+                path
+            )
+            self.checkpointer = await self.checkpointer_context.__aenter__()
+
+            # Reqired here as we need to register agents after intializing the checkpointer
+            await self.register_agent()
+        else:
+            @self.app.get("/api/agents")
+            async def list_agents():
+                return []
+
+    async def shutdown_event(self, app_instance: FastAPI):
+        """App shutdown events"""
+        if self.checkpointer_context is not None:
+            await self.checkpointer_context.__aexit__(None, None, None)
 
     @asynccontextmanager
     async def lifespan(self, app_instance: FastAPI):
@@ -166,3 +198,78 @@ class RegisterApp:
         """
         Register exception (Add here when required)
         """
+
+    def agent_callback(self) -> list:
+        callbacks = []
+        langfuse_callback = None
+
+        langfuse_secret_key = os.environ.get("LANGFUSE_SECRET_KEY")
+        langfuse_public_key = os.environ.get("LANGFUSE_PUBLIC_KEY")
+        langfuse_base_url = os.environ.get("LANGFUSE_BASE_URL")
+        langfuse_environment = os.environ.get("LANGFUSE_ENVIRONMENT", "")
+        if langfuse_secret_key is not None:
+            from langfuse import Langfuse
+            langfuse_callback = Langfuse(
+                secret_key=langfuse_secret_key,
+                public_key=langfuse_public_key,
+                environment=langfuse_environment,
+                base_url=langfuse_base_url,
+            )
+
+        if langfuse_callback is not None:
+            callbacks.append(langfuse_callback)
+
+        return callbacks
+
+    async def register_agent(self) -> None:
+        """
+        Register agents
+        """
+        from ag_ui_langgraph import add_langgraph_fastapi_endpoint
+        from copilotkit import LangGraphAGUIAgent
+
+        from dlo.agents.agent import AgentCompiler
+
+        agent_compiler = AgentCompiler(
+            project=self._project,
+            profile=self._profile,
+            agent_manifest=self._agent_manifest,
+            checkpointer=self.checkpointer,
+        )
+        await agent_compiler.compile()
+
+        callbacks = self.agent_callback()
+
+        for agent_name in agent_compiler.primary_agents:
+            compiled_agent = agent_compiler.compiled_agents[agent_name]
+            agent = agent_compiler.agent_manifest.agents[agent_name]
+
+            add_langgraph_fastapi_endpoint(
+                app=self.app,
+                agent=LangGraphAGUIAgent(
+                    name=agent.name,
+                    description=agent.description,
+                    graph=compiled_agent,
+                    config={"callbacks": callbacks},
+                ),
+                path=f"/api/agents/{agent.name}",
+            )
+
+        @self.app.get("/api/agents")
+        async def list_agents():
+            return agent_compiler.primary_agents
+
+        # agent = AgentCompiler().agent(checkpointer=self.checkpointer)
+        #
+        # callbacks = self.agent_callback()
+        #
+        # add_langgraph_fastapi_endpoint(
+        #     app=self.app,
+        #     agent=LangGraphAGUIAgent(
+        #         name="analytics_agent",
+        #         description="Analytics agent that have access to phone data",
+        #         graph=agent,
+        #         config={"callbacks": callbacks},
+        #     ),
+        #     path="/api/agents/test",
+        # )

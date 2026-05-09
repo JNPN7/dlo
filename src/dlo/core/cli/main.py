@@ -139,6 +139,7 @@ def mcp(ctx: click.Context, *args, **kwargs):
 @cli.command("serve")
 @click.pass_context
 @d.project
+@d.profile
 @d.lifespan
 @d.server
 @click.option(
@@ -157,6 +158,7 @@ def serve(ctx: click.Context, *args, **kwargs):
     dev_mode = kwargs.get("dev", False)
 
     project = ctx.obj.get("project")
+    profile = ctx.obj.get("profile")
     log_level = ctx.obj.get("log_level", "error")
     log_file = ctx.obj.get("log_file")
     host = ctx.obj.get("host")
@@ -180,9 +182,20 @@ def serve(ctx: click.Context, *args, **kwargs):
 
     # Create app with appropriate mode
     from dlo.api import RegisterApp
+    runtime = Runtime(project=project, profile=profile)
+
+    try:
+        agent_manifest = runtime.agent_manifest
+    except Exception as e:
+        import traceback
+        click.echo(f"Unable to read agent manifest: {e}")
+        click.echo(f"Detail: {traceback.format_exc()}")
+        agent_manifest = None
 
     app = RegisterApp(
         project=project,
+        profile=profile,
+        agent_manifest=agent_manifest,
         log_level=log_level,
         log_file=log_file,
         dev_mode=dev_mode,

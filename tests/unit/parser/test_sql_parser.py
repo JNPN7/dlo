@@ -2,7 +2,7 @@ from collections import Counter
 
 import pytest
 
-from dlo.core.parser.sql_parser import SqlParser
+from dlo.core.parser import SqlParser
 
 COMPLEX_QUERY_TABLES = ["main.sales.orders", "sales.customers", "profiles"]
 COMPLEX_QUERY = """

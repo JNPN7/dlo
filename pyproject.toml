@@ -9,7 +9,7 @@ description = "Data Lineage Orchestrator"
 authors = [{ name = "Juhel", email = "jpphanju54@gmail.com" }]
 license = "Apache-2.0"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "click>=8.3.1",
     "pydantic>=2.12.5",
@@ -29,15 +29,15 @@ dev = [
     "matplotlib>=3.10.8",
 ]
 test = [
-  "pytest",
-  "pytest-asyncio", 
+    "pytest",
+    "pytest-asyncio", 
 ]
 lint = [
-  "ruff",
+    "ruff",
 ]
 databricks = [
-  "databricks-sdk>=0.94.0",
-  "databricks-sql-connector>=4.2.3",
+    "databricks-sdk>=0.94.0",
+    "databricks-sql-connector>=4.2.3",
 ]
 vector_store = [
     "faiss-cpu>=1.13.2",
@@ -46,6 +46,14 @@ vector_store = [
     "langchain-openai>=1.1.12",
     "langchain-chroma>=0.1.2",
     "langchain-qdrant>=1.1.0",
+]
+agents = [
+    "ag-ui-langgraph>=0.0.35",
+    "copilotkit>=0.1.88",
+    "deepagents>=0.5.6",
+    "langgraph-checkpoint-sqlite>=3.0.3",
+    "langfuse>=4.5.1",
+    "python-frontmatter>=1.1.0",
 ]
 
 [tool.ruff]

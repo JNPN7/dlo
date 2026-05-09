@@ -12,6 +12,8 @@ import {
   Network,
   Search,
   ChevronLeft,
+  Bot,
+  Ghost,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -31,6 +33,7 @@ const navigation = [
   { name: "Relationships", href: "/relationships", icon: GitBranch },
   { name: "Metrics", href: "/metrics", icon: BarChart3 },
   { name: "Lineage", href: "/lineage", icon: Network },
+  { name: "Agent", href: "/agent", icon: Ghost },
 ];
 
 export function Sidebar() {
