@@ -10,6 +10,7 @@ from deepagents import CompiledSubAgent, create_deep_agent
 from langchain.agents import create_agent
 
 from dlo.agents.llm import ChatModelFactory
+from dlo.agents.tool import ToolRegistry
 from dlo.common.exceptions import errors
 from dlo.core.compiler.graph import Graph
 from dlo.core.config import Profile, Project
@@ -40,6 +41,7 @@ class AgentCompiler:
     def graph(self) -> Graph:
         graph = Graph()
 
+        agents_name = list(self.agent_manifest.agents.keys())
         agents = self.agent_manifest.agents.values()
 
         for agent in agents:
@@ -50,7 +52,7 @@ class AgentCompiler:
             (agent.name, subagent)
             for agent in agents
             for subagent in agent.subagents
-            if subagent not in agents
+            if subagent not in agents_name
         ]
         if missing:
             details = ', '.join(f"`{sub}` (in `{agent}`)" for agent, sub in missing)
@@ -91,6 +93,10 @@ class AgentCompiler:
         }
         return ChatModelFactory.create(**config)
 
+    def get_tools(self, agent: Agent):
+        tools = agent.tools
+        return [ToolRegistry.get(tool) for tool in tools]
+
     async def create_agent(self, agent: Agent):
         async def create_primary(agent: Agent):
             # path = Path(f"checkpoint/{agent.name}/checkpoint.sqlite")
@@ -106,6 +112,7 @@ class AgentCompiler:
                 model=model,
                 middleware=[CopilotKitMiddleware()],  # for frontend tools and context
                 system_prompt=agent.prompt,
+                tools=self.get_tools(agent),
                 checkpointer=self.checkpointer,
                 subagents=[self.compiled_agents[sub] for sub in agent.subagents]
             )
@@ -118,7 +125,8 @@ class AgentCompiler:
             else:
                 custom_graph = create_agent(
                     model=model,
-                    prompt=agent.prompt,
+                    system_prompt=agent.prompt,
+                    tools=self.get_tools(agent),
                 )
 
             # Use it as a custom subagent
@@ -148,6 +156,7 @@ class AgentCompiler:
         for agent_name in self.graph.topoligical_sort:
             await self.compile_agent(agent_name)
 
+    @classmethod
     def agent(self, checkpointer):
         import json
         import os
