@@ -4,13 +4,14 @@ DLO API Server.
 FastAPI application that serves the manifest REST API and the React UI static files.
 """
 
+import copy
 import os
 
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse
@@ -18,9 +19,11 @@ from fastapi.staticfiles import StaticFiles
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from dlo import __version__
+from dlo.api.contexts import current_manifest, current_project
 from dlo.common.logger import setup_logger
 from dlo.core.config import Profile, Project
 from dlo.core.models.agent import AgentManifest
+from dlo.core.models.manifest import Manifest
 
 
 class RegisterApp:
@@ -122,6 +125,16 @@ class RegisterApp:
 
         self.app.add_middleware(GZipMiddleware)
 
+        # Add middleware to set project context for each request
+        @self.app.middleware("http")
+        async def set_project_context(request: Request, call_next):
+            current_project.set(copy.deepcopy(self._project))
+            current_manifest.set(Manifest.__from_project__(self._project))
+
+            response = await call_next(request)
+
+            return response
+
     def register_router(self):
         """
         Register app router
@@ -209,12 +222,14 @@ class RegisterApp:
         langfuse_environment = os.environ.get("LANGFUSE_ENVIRONMENT", "")
         if langfuse_secret_key is not None:
             from langfuse import Langfuse
-            langfuse_callback = Langfuse(
+            from langfuse.langchain import CallbackHandler
+            Langfuse(
                 secret_key=langfuse_secret_key,
                 public_key=langfuse_public_key,
                 environment=langfuse_environment,
                 base_url=langfuse_base_url,
             )
+            langfuse_callback = CallbackHandler()
 
         if langfuse_callback is not None:
             callbacks.append(langfuse_callback)
