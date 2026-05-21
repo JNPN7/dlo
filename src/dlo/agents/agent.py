@@ -7,6 +7,7 @@ from typing import Callable
 
 from copilotkit import CopilotKitMiddleware
 from deepagents import CompiledSubAgent, create_deep_agent
+from deepagents.backends import FilesystemBackend
 from langchain.agents import create_agent
 
 from dlo.agents.llm import ChatModelFactory
@@ -114,15 +115,19 @@ class AgentCompiler:
                 system_prompt=agent.prompt,
                 tools=self.get_tools(agent),
                 checkpointer=self.checkpointer,
-                subagents=[self.compiled_agents[sub] for sub in agent.subagents]
+                subagents=[self.compiled_agents[sub] for sub in agent.subagents],
+                permissions=agent.permissions,
+                backend=FilesystemBackend(
+                    root_dir=self.project.project_root_path, virtual_mode=True
+                ),
+                skills=agent.skills,
             )
 
         async def create_subagent(agent: Agent):
-            model = self.get_model(agent)
-
-            if agent.subagents:
-                custom_graph = create_primary(agent)
+            if agent.subagents or agent.permissions:
+                custom_graph = await create_primary(agent)
             else:
+                model = self.get_model(agent)
                 custom_graph = create_agent(
                     model=model,
                     system_prompt=agent.prompt,

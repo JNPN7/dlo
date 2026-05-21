@@ -15,29 +15,11 @@ log = logging.getLogger(__name__)
 class AgentManifestLoader:
     def __init__(self, project: Project):
         self.project = project
-        self.agent_manifest = AgentManifest()
-
-    @cached_property
-    def root_dir(self) -> Path:
-        candidates = [
-            self.project.project_root_path / ".dlo",
-            self.project.project_root_path / ".opencode",
-            self.project.project_root_path / ".claude",
-        ]
-
-        for path in candidates:
-            if path.exists():
-                log.debug(f"Agent manifest loaded from directory: {path}")
-                return path
-
-        raise errors.DloConfigError(
-            "Agents configuration not found.\n"
-            "Create .dlo or .opencode or .claude directory and add agents"
-        )
+        self.agent_manifest = AgentManifest.__from_project__(project)
 
     @cached_property
     def agents_dir(self) -> Path:
-        return self.root_dir / "agents"
+        return self.agent_manifest.root_dir / "agents"
 
     def load_agents(self) -> None:
         # Initialize file reader for the project root
@@ -54,13 +36,14 @@ class AgentManifestLoader:
 
             if file_path.suffix != ".md":
                 continue
-
             try:
                 data = reader.read_markdown(file_path)
+
                 agent = Agent.from_dict({
                     "name": file_path.stem,
                     **data.metadata,
-                    "prompt": data.content
+                    "prompt": data.content,
+                    "base_dir": self.agent_manifest.base_dir,
                 })
             except Exception as e:
                 raise errors.DloCompilationError(
