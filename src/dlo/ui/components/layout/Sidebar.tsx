@@ -33,7 +33,8 @@ const navigation = [
   { name: "Relationships", href: "/relationships", icon: GitBranch },
   { name: "Metrics", href: "/metrics", icon: BarChart3 },
   { name: "Lineage", href: "/lineage", icon: Network },
-  { name: "Agent", href: "/agent", icon: Ghost },
+  { name: "Agents", href: "/agent/lineage", icon: Bot },
+  { name: "Chat", href: "/agent", icon: Ghost },
 ];
 
 export function Sidebar() {
@@ -177,7 +178,7 @@ export function Sidebar() {
         <nav className="flex flex-col gap-1">
           {navigation.map((item) => {
             const isActive =
-              item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              item.href === "/" ? pathname === "/" : pathname === item.href + "/";
 
             return (
               <React.Fragment key={item.name}>
