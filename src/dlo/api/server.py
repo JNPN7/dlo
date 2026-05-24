@@ -274,6 +274,10 @@ class RegisterApp:
         async def list_agents():
             return agent_compiler.primary_agents
 
+        @self.app.get("/api/agents-manifest")
+        async def agent_manifest():
+            return self._agent_manifest
+
         # agent = AgentCompiler().agent(checkpointer=self.checkpointer)
         #
         # callbacks = self.agent_callback()
