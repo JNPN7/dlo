@@ -1,0 +1,10 @@
+profile.yaml
+profile.yml
+
+.env
+
+logs
+logs/*
+
+target
+target/*
