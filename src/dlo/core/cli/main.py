@@ -26,6 +26,19 @@ def version():
     click.echo(f"DLO version: {__version__.version}")
 
 
+@cli.command("init")
+def init():
+    """Intialize a new project."""
+    from dlo.core.init_project import InitProject
+
+    project_name = click.prompt("Project name")
+    profile = click.prompt("Profile")
+    template = click.prompt("Template", type=click.Choice(["default"]), default="default")
+
+    InitProject(template=template, project_name=project_name, profile=profile).initalize()
+    click.echo(click.style("Project initialized", fg="green"))
+
+
 @cli.command("compile")
 @click.pass_context
 @d.project
