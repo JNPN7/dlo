@@ -6,7 +6,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 
 TEMPLATE_PATH = "dlo.templates"
 

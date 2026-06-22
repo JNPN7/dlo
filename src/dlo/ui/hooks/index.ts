@@ -3,3 +3,4 @@ export type { ManifestStats, GraphNode, GraphEdge, SearchResult } from "./use-ma
 export { useSidebar, SidebarProvider } from "./use-sidebar";
 export { useAgents } from "./use-agents";
 export { useAgentManifest } from "./use-agent-manifest";
+export { useCharts, useChartConfig } from "./use-charts";

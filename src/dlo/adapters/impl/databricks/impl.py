@@ -22,8 +22,8 @@ from databricks.sdk.service.jobs import (
 )
 from databricks.sdk.service.workspace import ImportFormat
 from dlo.adapters.adapter import Adapter
-from dlo.adapters.model import Node, NodeId, NodeMap, RuntimeConfig
-from dlo.common.exceptions import errors
+from dlo.adapters.model import Node, NodeId, NodeMap, QueryResult, RuntimeConfig
+from dlo.common.exception import errors
 from dlo.common.schema import SchemaMixin
 from dlo.core.models.resources import ModelType
 
@@ -162,8 +162,17 @@ class DatabricksAdapter(Adapter):
 
         return data
 
-    def fetch(self, query: str):
-        raise errors.DloFeatureNotImplementedError()
+    def query(self, query: str) -> QueryResult:
+        rows = self.execute(query)
+        if not rows:
+            return QueryResult(columns=[], rows=[])
+
+        columns = list(rows[0].__fields__)
+
+        return QueryResult(
+            columns=columns,
+            rows=[tuple(row) for row in rows],
+        )
 
     def _create_table(self, model: Node):
         # NOTE: Used this which is optimized but had it like this

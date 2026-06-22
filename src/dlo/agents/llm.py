@@ -4,7 +4,7 @@ Chat Model (LLM) classes with factory
 
 from langchain_core.language_models.chat_models import BaseChatModel
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 
 
 # TODO: Testing all the chat model provider and Add new

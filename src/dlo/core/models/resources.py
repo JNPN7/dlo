@@ -5,7 +5,7 @@ from typing import Optional
 from mashumaro.config import BaseConfig
 from quartz_cron_checker import QuartzCronChecker
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 from dlo.common.schema import EnumBase, SchemaMixin
 
 # =========================
@@ -24,6 +24,8 @@ class ResourceTypes(EnumBase):
     source = NodeResourceTypes.source
     model = NodeResourceTypes.model
     code = auto()
+    chart = auto()
+    dashboard = auto()
 
 
 class ColumnCategory(EnumBase):
@@ -45,6 +47,13 @@ class ModelType(EnumBase):
 
 class CodeType(EnumBase):
     sql = auto()
+    # python = auto()
+
+
+class ChartDataSource(EnumBase):
+    sql = auto()
+    model = auto()
+    # python = auto()
 
 
 # =========================
@@ -57,7 +66,7 @@ class BaseResource(SchemaMixin):
     name: str
     file_path: str
     resource_type: ResourceTypes
-    description: str
+    description: str = field(default="")
     tags: Optional[list[str]] = field(default=None)
     unique_id: Optional[str] = field(default=None)
 
@@ -66,6 +75,9 @@ class BaseResource(SchemaMixin):
         if self.unique_id is None:
             self.unique_id = self.name
 
+    class Meta:
+        # This will remove any fields that are None
+        skip_none = True
 
 # =========================
 # Model Mixins
@@ -249,11 +261,53 @@ class Metric(BaseResource):
 
 
 @dataclass(kw_only=True)
-class Code:
+class Code(BaseResource):
     name: str
-    path: str
     code: str
+    resource_type: ResourceTypes = field(default=ResourceTypes.code)
     type: CodeType = field(default=CodeType.sql)
+
+
+# =========================
+# Charts
+# =========================
+class ChartEngine(EnumBase):
+    echarts = auto()
+    custom = auto()
+
+
+@dataclass(kw_only=True)
+class Chart(BaseResource):
+    sql: Optional[str] = field(default=None)
+    model: Optional[str] = field(default=None)
+    resource_type: ResourceTypes = field(default=ResourceTypes.chart)
+    data_source: ChartDataSource = field(default=ChartDataSource.sql)
+    freshness: Optional[int] = field(default=None)
+    engine: ChartEngine = ChartEngine.echarts
+    option: dict = field(default_factory=dict)
+
+    def __post_init__(self):
+        super().__post_init__()
+
+        requirements = {
+            ChartDataSource.sql: "sql",
+            ChartDataSource.model: "model",
+        }
+
+        for typ, field_name in requirements.items():
+            if self.data_source == typ:
+                # Dynamically fetch the value of property using the string name
+                field_value = getattr(self, field_name)
+                if not field_value:
+                    raise errors.DloCompilationError(
+                        f"'{field_name}' must be provided when data_source='{typ.value}'"
+                    )
+
+
+@dataclass(kw_only=True)
+class Dashboard(BaseResource):
+    resource_type: ResourceTypes = field(default=ResourceTypes.dashboard)
+    charts: list[str] = field(default=list)
 
 
 # =========================
@@ -267,12 +321,13 @@ class Resource:
         "relationships": Relationship,
         "sources": Source,
         "metrics": Metric,
+        "charts": Chart,
     }
 
     def create_resource(self, resouce_type: str, data: dict):
         model_cls = self.model_factory.get(resouce_type.lower())
         if not model_cls:
-            raise ValueError(f"Resource model: {resouce_type}")
+            raise errors.DloCompilationError(f"Resource model: {resouce_type}")
         return model_cls(**data)
 
     @classmethod

@@ -3,7 +3,7 @@ import logging
 from functools import cached_property
 from pathlib import Path
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 from dlo.core.config import Project
 from dlo.core.models.agent import Agent, AgentManifest
 from dlo.core.parser.file_reader import FileReaderFromFileSystem

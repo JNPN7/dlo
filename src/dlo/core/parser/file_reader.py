@@ -6,7 +6,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import List, Optional
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 
 # Configure module logger
 log = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class FileReaderFromFileSystem:
                 operations will be relative to this directory.
 
         Raises:
-            None: This method does not raise exceptions during initialization.
+            None: This method does not raise exception during initialization.
         """
         log.debug("Initializing FileReaderFromFileSystem with root_dir: %s", root_dir)
         self.root_dir = root_dir
