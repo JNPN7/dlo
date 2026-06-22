@@ -8,7 +8,7 @@ from functools import cached_property
 from typing import Mapping, TypeAlias
 
 from dlo.adapters.adapter import Adapter
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 from dlo.core.compiler.compiler import GraphCompiler
 from dlo.core.compiler.graph import Graph
 from dlo.core.config import Project
@@ -187,5 +187,5 @@ class Runner:
         compiled_code = self.compile_query(query=query, graph_compiler=graph_compiler)
 
         log.info("Executing compiled query: %s", compiled_code)
-        data = self.adapter.execute(compiled_code)
+        data = self.adapter.query(compiled_code)
         return data

@@ -19,6 +19,9 @@ from fastapi.staticfiles import StaticFiles
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from dlo import __version__
+from dlo.api.common.exception.exception_handler import (
+    register_exception as register_exception_func,
+)
 from dlo.api.contexts import current_manifest, current_project
 from dlo.common.logger import setup_logger
 from dlo.core.config import Profile, Project
@@ -75,6 +78,7 @@ class RegisterApp:
     async def startup_event(self, app_instance: FastAPI):
         """App startup events"""
         app_instance.state.project = self._project
+        app_instance.state.profile = self._profile
 
         if self._agent_manifest is not None:
             path = Path("checkpoint/checkpoint.sqlite")
@@ -209,8 +213,9 @@ class RegisterApp:
 
     def register_exception(self) -> None:
         """
-        Register exception (Add here when required)
+        Register exception handlers
         """
+        register_exception_func(self.app)
 
     def agent_callback(self) -> list:
         callbacks = []

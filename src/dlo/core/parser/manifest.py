@@ -14,7 +14,7 @@ import logging
 
 from pathlib import Path
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 from dlo.core.config import Project
 from dlo.core.constants import PARSE_DIRECTORIES_IGNORE
 from dlo.core.models.manifest import Manifest
@@ -137,7 +137,7 @@ class ManifestLoader:
                             f"Sql file not found for model `{validated_data.name}`"
                         )
                     validated_data.raw_code = code.code
-                    validated_data.code_path = code.path
+                    validated_data.code_path = code.file_path
 
                 self._check_if_name_already_exists(
                     validated_data.file_path, validated_data.name, resource_type
@@ -172,7 +172,7 @@ class ManifestLoader:
         absolute_file_path = file_path.absolute().as_posix()
 
         # Store SQL content using string path as key for consistency
-        self.manifest.code[name] = Code(name=name, path=absolute_file_path, code=sql)
+        self.manifest.code[name] = Code(name=name, file_path=absolute_file_path, code=sql)
 
         log.debug("Added SQL file to manifest: %s (%d characters)", file_path, len(sql))
 

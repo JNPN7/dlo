@@ -8,7 +8,7 @@ from langchain_core.embeddings import Embeddings
 
 import faiss
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 from dlo.core.config import VectorCollectionConfig
 from dlo.vector_store.vector_store import VectorStore
 

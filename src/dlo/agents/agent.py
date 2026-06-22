@@ -12,7 +12,7 @@ from langchain.agents import create_agent
 
 from dlo.agents.llm import ChatModelFactory
 from dlo.agents.tool import ToolRegistry
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 from dlo.core.compiler.graph import Graph
 from dlo.core.config import Profile, Project
 from dlo.core.constants import COMPILED_GRAPH_FIG_PATH_AGENTS

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from dlo.adapters.model import NodeId, NodeMap
-from dlo.common.exceptions import errors
+from dlo.adapters.model import NodeId, NodeMap, QueryResult
+from dlo.common.exception import errors
 from dlo.core.models.resources import Model
 
 
@@ -19,7 +19,7 @@ class Adapter(ABC):
     def execute(self, query: str): ...
 
     @abstractmethod
-    def fetch(self, query: str): ...
+    def query(self, query: str) -> QueryResult: ...
 
     @abstractmethod
     def _create_table(self, model: Model): ...

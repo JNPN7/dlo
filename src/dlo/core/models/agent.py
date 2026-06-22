@@ -7,7 +7,7 @@ from typing import Optional
 
 from deepagents import FilesystemPermission
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 from dlo.common.schema import EnumBase, SchemaMixin
 from dlo.core.config import Project
 

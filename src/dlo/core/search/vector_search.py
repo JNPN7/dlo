@@ -4,7 +4,7 @@ from functools import cached_property
 
 from langchain_core.documents import Document
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 from dlo.core.config import Embeddings as EmbeddingsConfig
 from dlo.core.config import Profile, Project, VectorSearchConfig
 from dlo.core.config import VectorStore as VectorStoreConfig

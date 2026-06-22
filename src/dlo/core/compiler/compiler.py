@@ -9,7 +9,7 @@ from itertools import chain
 from pathlib import Path
 from typing import Literal, Mapping
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 from dlo.core.compiler.graph import Graph
 from dlo.core.config import Project
 from dlo.core.constants import COMPILED_GRAPH_FIG_PATH_NODES, TARGET_DIR

@@ -137,7 +137,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col">
       <Header
-        title="Dashboard"
+        title="Home"
         description="Overview of your data lineage"
         onRefresh={() => refetch()}
         isLoading={isLoading}

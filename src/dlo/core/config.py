@@ -7,7 +7,7 @@ from typing import Literal, Optional, get_args
 
 import yaml
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 from dlo.common.schema import SchemaMixin
 
 # Configure module logger

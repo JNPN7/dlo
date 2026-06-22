@@ -4,7 +4,7 @@ import logging
 from typing import Callable
 
 from dlo.adapters.adapter import Adapter
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 
 log = logging.getLogger("__name__")
 

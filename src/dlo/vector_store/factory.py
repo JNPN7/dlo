@@ -3,7 +3,7 @@ import logging
 
 from typing import Callable
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 from dlo.vector_store.vector_store import VectorStore
 
 log = logging.getLogger("__name__")

@@ -4,7 +4,7 @@ Embeddings classes with factory
 
 from langchain_core.embeddings import Embeddings
 
-from dlo.common.exceptions import errors
+from dlo.common.exception import errors
 
 
 # TODO: Testing all the embeddings provider and Add new

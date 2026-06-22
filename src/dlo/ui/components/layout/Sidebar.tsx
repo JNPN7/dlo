@@ -14,6 +14,8 @@ import {
   ChevronLeft,
   Bot,
   Ghost,
+  ChartArea,
+  Home,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -27,7 +29,7 @@ import {
 import { useSidebar } from "@/hooks";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Home", href: "/", icon: Home },
   { name: "Sources", href: "/sources", icon: Database },
   { name: "Models", href: "/models", icon: Box },
   { name: "Relationships", href: "/relationships", icon: GitBranch },
@@ -35,6 +37,8 @@ const navigation = [
   { name: "Lineage", href: "/lineage", icon: Network },
   { name: "Agents", href: "/agent/lineage", icon: Bot },
   { name: "Chat", href: "/agent", icon: Ghost },
+  { name: "Charts", href: "/charts", icon: ChartArea },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
 ];
 
 export function Sidebar() {
