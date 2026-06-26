@@ -1,4 +1,4 @@
-import type { Chart, ChartsResponse } from "@/types/chart";
+import type { Chart, ChartConfig, ChartsResponse } from "@/types/chart";
 
 const API_BASE = "/api";
 
@@ -34,11 +34,11 @@ export async function fetchCharts(): Promise<Chart[]> {
 }
 
 /**
- * Fetch the ECharts configuration for a specific chart.
+ * Fetch the chart configuration for a specific chart.
  * @param chartId - The unique identifier of the chart
- * @returns The ECharts option configuration object
+ * @returns The chart configuration including engine and option
  */
-export async function fetchChartConfig(chartId: string): Promise<Record<string, unknown>> {
+export async function fetchChartConfig(chartId: string): Promise<ChartConfig> {
   const response = await fetch(`${API_BASE}/charts/${encodeURIComponent(chartId)}`, {
     headers: {
       "Content-Type": "application/json",

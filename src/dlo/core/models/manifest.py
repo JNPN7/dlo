@@ -5,7 +5,7 @@ import yaml
 from dlo.common.schema import SchemaMixin
 from dlo.core.config import Project
 from dlo.core.constants import MANIFEST_FILE_NAME, TARGET_DIR
-from dlo.core.models.resources import Chart, Code, Metric, Model, Relationship, Source
+from dlo.core.models.resources import Chart, Code, Dashboard, Metric, Model, Relationship, Source
 
 
 @dataclass
@@ -16,6 +16,7 @@ class Manifest(SchemaMixin):
     metrics: dict[str, Metric] = field(default_factory=dict)
     code: dict[str, Code] = field(default_factory=dict)
     charts: dict[str, Chart] = field(default_factory=dict)
+    dashboards: dict[str, Dashboard] = field(default_factory=dict)
 
     def save(self, project: Project):
         target_path = project.project_root_path / TARGET_DIR

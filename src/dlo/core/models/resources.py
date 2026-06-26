@@ -75,9 +75,9 @@ class BaseResource(SchemaMixin):
         if self.unique_id is None:
             self.unique_id = self.name
 
-    class Meta:
+    class Config(BaseConfig):
         # This will remove any fields that are None
-        skip_none = True
+        omit_none = True
 
 # =========================
 # Model Mixins
@@ -303,11 +303,90 @@ class Chart(BaseResource):
                         f"'{field_name}' must be provided when data_source='{typ.value}'"
                     )
 
+# =========================
+# Dashboards
+# =========================
+
+
+# Referenced from react-grid-layout
+# https://github.com/react-grid-layout/react-grid-layout/blob/master/src/core/types.ts
+@dataclass
+class LayoutItem(SchemaMixin):
+    i: str = field(metadata={"description": "Unique identifier for an item"})
+    x: int = field(metadata={"description": "X position in grid units"})
+    y: int = field(metadata={"description": "Y position in grid units"})
+    w: int = field(metadata={"description": "Width in grid units"})
+    h: int = field(metadata={"description": "Height in grid units"})
+    minW: Optional[int] = field(
+        default=None,
+        metadata={"description": "Minimum width in grid units"},
+    )
+    minH: Optional[int] = field(
+        default=None,
+        metadata={"description": "Minimum height in grid units"},
+    )
+    maxW: Optional[int] = field(
+        default=None,
+        metadata={"description": "Maximum width in grid units"},
+    )
+    maxH: Optional[int] = field(
+        default=None,
+        metadata={"description": "Maximum height in grid units"},
+    )
+    static: Optional[bool] = field(
+        default=None,
+        metadata={"description": "If true, item cannot be dragged or resized"},
+    )
+    isDraggable: Optional[bool] = field(
+        default=None,
+        metadata={"description": "If false, item cannot be dragged but may be resizable"},
+    )
+    isResizable: Optional[bool] = field(
+        default=None,
+        metadata={"description": "If false, item cannot be resized but may be draggable"},
+    )
+
+    class Config(BaseConfig):
+        # This will remove any fields that are None
+        omit_none = True
+
+
+# Referenced from react-grid-layout
+# https://github.com/react-grid-layout/react-grid-layout/blob/master/src/core/types.ts
+@dataclass
+class GridConfig(SchemaMixin):
+    cols: Optional[int] = field(
+        default=None,
+        metadata={"description": "Number of columns in the grid"},
+    )
+    rowHeight: Optional[int] = field(
+        default=None,
+        metadata={"description": "Height of a single row in pixels"},
+    )
+    margin: Optional[tuple[int, int]] = field(
+        default=None,
+        metadata={"description": "[horizontal, vertical] margin between items in pixels"},
+    )
+    containerPadding: Optional[tuple[int, int]] = field(
+        default=None,
+        metadata={"description": "[horizontal, vertical] padding inside the container"},
+    )
+    maxRows: Optional[int] = field(
+        default=None,
+        metadata={"description": "Maximum number of rows"},
+    )
+
+    class Config(BaseConfig):
+        # This will remove any fields that are None
+        omit_none = True
+
 
 @dataclass(kw_only=True)
 class Dashboard(BaseResource):
     resource_type: ResourceTypes = field(default=ResourceTypes.dashboard)
-    charts: list[str] = field(default=list)
+    charts: dict[str, str] = field(default_factory=dict)
+    layout: list[LayoutItem] = field(default_factory=list)
+    grid_config: Optional[GridConfig] = field(default=None)
 
 
 # =========================
@@ -322,6 +401,7 @@ class Resource:
         "sources": Source,
         "metrics": Metric,
         "charts": Chart,
+        "dashboards": Dashboard,
     }
 
     def create_resource(self, resouce_type: str, data: dict):

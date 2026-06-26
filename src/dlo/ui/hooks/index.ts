@@ -4,3 +4,4 @@ export { useSidebar, SidebarProvider } from "./use-sidebar";
 export { useAgents } from "./use-agents";
 export { useAgentManifest } from "./use-agent-manifest";
 export { useCharts, useChartConfig } from "./use-charts";
+export { useDashboards, useDashboardCharts } from "./use-dashboards";
