@@ -1,15 +1,15 @@
 'use client'
 
 import { useState, useMemo } from 'react';
-import ReactECharts from 'echarts-for-react';
 import { BarChart3, Search } from 'lucide-react';
 import { Header } from '@/components/layout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ChartContainer } from '@/components/charts';
 import { useCharts, useChartConfig } from '@/hooks';
-import type { Chart, ChartConfig } from '@/types/chart';
+import type { Chart } from '@/types/chart';
 
 /** Skeleton for chart list items while loading */
 function ChartListSkeleton() {
@@ -21,16 +21,6 @@ function ChartListSkeleton() {
           <Skeleton className="h-3 w-full" />
         </div>
       ))}
-    </div>
-  );
-}
-
-/** Skeleton for chart display area while loading */
-function ChartDisplaySkeleton() {
-  return (
-    <div className="flex flex-col items-center justify-center h-full p-8">
-      <Skeleton className="h-8 w-48 mb-4" />
-      <Skeleton className="h-[400px] w-full max-w-3xl rounded-lg" />
     </div>
   );
 }
@@ -135,17 +125,6 @@ function ChartList({
   );
 }
 
-function ChartRender({ chartConfig }: { chartConfig: ChartConfig }) {
-
-  if (chartConfig.engine == "echarts") return <ReactECharts
-    option={chartConfig || {}}
-    style={{ height: '100%', width: '100%' }}
-    opts={{ renderer: 'canvas' }}
-  />
-
-  if (chartConfig.engine == "custom") return <></>
-}
-
 /** Right panel displaying the selected chart */
 function ChartDisplay({
   chartId,
@@ -169,42 +148,17 @@ function ChartDisplay({
     );
   }
 
-  // Loading state
-  if (isLoading) {
-    return <ChartDisplaySkeleton />;
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-full p-8">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-destructive">Error Loading Chart</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">{error.message}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-  console.log(chartName)
-
-  // Chart loaded successfully
   return (
-    <div className="flex flex-col h-full p-6">
-      {chartName && (
-        <h2 className="text-xl font-semibold mb-4">{chartName}</h2>
-      )}
-      <div className="flex-1 min-h-0">
-        <ReactECharts
-          option={chartConfig?.option || {}}
-          style={{ height: '100%', width: '100%' }}
-          opts={{ renderer: 'canvas' }}
-        />
-      </div>
-    </div>
+    <ChartContainer
+      chartConfig={chartConfig}
+      isLoading={isLoading}
+      error={error}
+      chartKey={chartId}
+      title={chartName ?? undefined}
+      showHeader={!!chartName}
+      headerVariant="large"
+      skeletonVariant="full"
+    />
   );
 }
 
