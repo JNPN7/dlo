@@ -275,7 +275,10 @@ class RegisterApp:
                     name=agent.name,
                     description=agent.description,
                     graph=compiled_agent,
-                    config={"callbacks": callbacks},
+                    config={
+                        "callbacks": callbacks,
+                        "recursion_limit": agent.recursion_limit,
+                    },
                 ),
                 path=f"/api/agents/{agent.name}",
             )
