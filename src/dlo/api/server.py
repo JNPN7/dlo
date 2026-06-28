@@ -5,6 +5,7 @@ FastAPI application that serves the manifest REST API and the React UI static fi
 """
 
 import copy
+import logging
 import os
 
 from contextlib import asynccontextmanager
@@ -22,11 +23,13 @@ from dlo import __version__
 from dlo.api.common.exception.exception_handler import (
     register_exception as register_exception_func,
 )
-from dlo.api.contexts import current_manifest, current_project
+from dlo.api.contexts import current_manifest, current_profile, current_project
 from dlo.common.logger import setup_logger
 from dlo.core.config import Profile, Project
 from dlo.core.models.agent import AgentManifest
 from dlo.core.models.manifest import Manifest
+
+log = logging.getLogger("__name__")
 
 
 class RegisterApp:
@@ -134,6 +137,7 @@ class RegisterApp:
         async def set_project_context(request: Request, call_next):
             current_project.set(copy.deepcopy(self._project))
             current_manifest.set(Manifest.__from_project__(self._project))
+            current_profile.set(copy.deepcopy(self._profile))
 
             response = await call_next(request)
 
@@ -224,7 +228,7 @@ class RegisterApp:
         langfuse_secret_key = os.environ.get("LANGFUSE_SECRET_KEY")
         langfuse_public_key = os.environ.get("LANGFUSE_PUBLIC_KEY")
         langfuse_base_url = os.environ.get("LANGFUSE_BASE_URL")
-        langfuse_environment = os.environ.get("LANGFUSE_ENVIRONMENT", "")
+        langfuse_environment = os.environ.get("LANGFUSE_ENVIRONMENT")
         if langfuse_secret_key is not None:
             from langfuse import Langfuse
             from langfuse.langchain import CallbackHandler
@@ -235,6 +239,7 @@ class RegisterApp:
                 base_url=langfuse_base_url,
             )
             langfuse_callback = CallbackHandler()
+            log.info("Langfuse callback added")
 
         if langfuse_callback is not None:
             callbacks.append(langfuse_callback)

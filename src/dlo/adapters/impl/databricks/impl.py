@@ -25,6 +25,7 @@ from dlo.adapters.adapter import Adapter
 from dlo.adapters.model import Node, NodeId, NodeMap, QueryResult, RuntimeConfig
 from dlo.common.exception import errors
 from dlo.common.schema import SchemaMixin
+from dlo.core.constants import DEFAULT_CURSOR_LIMIT
 from dlo.core.models.resources import ModelType
 
 log = logging.getLogger(__name__)
@@ -144,13 +145,16 @@ class DatabricksAdapter(Adapter):
         )
         return connection
 
-    def execute(self, query: str):
+    def execute(self, query: str, cursor_limit: Optional[int] = DEFAULT_CURSOR_LIMIT):
         try:
             with self.connection() as connection:
                 with connection.cursor() as cursor:
                     log.info("Executing query:\n%s", query)
                     cursor.execute(query)
-                    data = cursor.fetchall()
+                    if cursor_limit is None:
+                        data = cursor.fetchall()
+                    else:
+                        data = cursor.fetchmany(cursor_limit)
 
         except sql.exc.ServerOperationError as server_err:
             raise server_err
@@ -162,8 +166,8 @@ class DatabricksAdapter(Adapter):
 
         return data
 
-    def query(self, query: str) -> QueryResult:
-        rows = self.execute(query)
+    def query(self, query: str, cursor_limit: Optional[int] = DEFAULT_CURSOR_LIMIT) -> QueryResult:
+        rows = self.execute(query, cursor_limit)
         if not rows:
             return QueryResult(columns=[], rows=[])
 
