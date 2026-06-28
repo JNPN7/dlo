@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { Bot, ChevronDown, MessageSquareOff } from "lucide-react";
 import { useDefaultRenderTool } from "@copilotkit/react-core/v2";
-import { CopilotChat } from "@copilotkit/react-core/v2";
+import { CopilotChat, useAgent } from "@copilotkit/react-core/v2";
+import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAgents } from "@/hooks";
+import {
+  SidePanel,
+  TodoList,
+  FloatingPanelButton,
+  type TodoItem,
+} from "@/components/agents/side-panel";
 
 // FIXME: The agent switch is not working fine, the histroy is getting messed up
 // and when switching the agent the it starts with new chat
@@ -112,7 +119,27 @@ interface AgentChatInstanceProps {
   isActive: boolean;
 }
 
+/**
+ * Converts raw todo data from agent state to typed TodoItem array
+ */
+function mapAgentTodos(todos: any[]): TodoItem[] {
+  return todos.map((item, index) => ({
+    id: item.id || `todo-${index}`,
+    content: item.content || "",
+    status: item.status || "pending",
+  }));
+}
+
 function AgentChatInstance({ agentId, isActive }: AgentChatInstanceProps) {
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
+
+  // Pull live structured agent state derived via the middleware 
+  const { agent } = useAgent({ agentId });
+
+  // Convert raw todos to typed TodoItem array
+  const rawTodos = agent.state?.todos || [];
+  const todos = mapAgentTodos(rawTodos);
+
   useDefaultRenderTool({
     render: ({ name, status, result }) => (
       <details>
@@ -127,10 +154,29 @@ function AgentChatInstance({ agentId, isActive }: AgentChatInstanceProps) {
 
   return (
     <div
-      className={`h-full ${isActive ? "block" : "hidden"}`}
+      className={cn("h-full flex", isActive ? "flex" : "hidden")}
       aria-hidden={!isActive}
     >
-      <CopilotChat labels={{}} agentId={agentId} />
+      {/* Chat Component - takes remaining space */}
+      <div className="flex-1 min-w-0 h-full">
+        <CopilotChat labels={{}} agentId={agentId} />
+      </div>
+
+      {/* Right Side Panel (non-blocking, sits beside chat) */}
+      <SidePanel
+        isOpen={isSidePanelOpen}
+        onClose={() => setIsSidePanelOpen(false)}
+        title="Details"
+      >
+        <TodoList todos={todos} />
+      </SidePanel>
+
+      {/* Floating Button - only show when this agent is active and panel is closed */}
+      {isActive && !isSidePanelOpen && (
+        <FloatingPanelButton
+          onClick={() => setIsSidePanelOpen(true)}
+        />
+      )}
     </div>
   );
 }

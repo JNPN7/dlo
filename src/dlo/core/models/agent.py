@@ -10,6 +10,7 @@ from deepagents import FilesystemPermission
 from dlo.common.exception import errors
 from dlo.common.schema import EnumBase, SchemaMixin
 from dlo.core.config import Project
+from dlo.core.constants import DEFAULT_AGENT_RECURSION_LIMIT
 
 # Configure module logger
 log = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ class Agent(SchemaMixin):
     subagents: list[str] = field(default_factory=list)
     skills: list[str] = field(default_factory=list)
     tools: list[str] = field(default_factory=list)
+    recursion_limit: int = field(default=DEFAULT_AGENT_RECURSION_LIMIT)
 
     base_dir: Optional[str] = field(default=None)
 

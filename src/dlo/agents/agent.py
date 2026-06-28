@@ -153,6 +153,7 @@ class AgentCompiler:
                 runnable=custom_graph
             )
 
+        # Agent factory
         agent_map: dict[AgentMode, Callable] = {
             AgentMode.primary: create_primary,
             AgentMode.subagent: create_subagent,
