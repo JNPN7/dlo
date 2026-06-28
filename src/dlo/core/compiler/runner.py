@@ -5,7 +5,7 @@ Run the compiled project with the dependents
 import logging
 
 from functools import cached_property
-from typing import Mapping, TypeAlias
+from typing import Mapping, Optional, TypeAlias
 
 from dlo.adapters.adapter import Adapter
 from dlo.common.exception import errors
@@ -182,10 +182,12 @@ class Runner:
 
         return compiled_code
 
-    def execute_query(self, query: str, graph_compiler: GraphCompiler):
+    def execute_query(
+        self, query: str, graph_compiler: GraphCompiler, cursor_limit: Optional[int] = None
+    ):
         log.info("Compiling the query")
         compiled_code = self.compile_query(query=query, graph_compiler=graph_compiler)
 
         log.info("Executing compiled query: %s", compiled_code)
-        data = self.adapter.query(compiled_code)
+        data = self.adapter.query(compiled_code, cursor_limit)
         return data

@@ -1,4 +1,3 @@
-
 from typing import TYPE_CHECKING
 
 from dlo.agents.tool import ToolRegistry
@@ -22,6 +21,22 @@ def get_tables():
         tables.append(model.name)
 
     return ", ".join(tables)
+
+
+def get_schema(table_name: str):
+    """Get schema of the specific table"""
+
+
+def select_table():
+    ...
+
+
+def targeted_entity_search():
+    ...
+
+
+def fewshot_fetcher():
+    ...
 
 
 ToolRegistry.register("get_tables", get_tables)

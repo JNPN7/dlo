@@ -56,8 +56,12 @@ class Runtime:
 
         self.runner.schedule()
 
-    def execute_query(self, query: str):
-        result = self.runner.execute_query(query=query, graph_compiler=self.graph_compiler)
+    def execute_query(self, query: str, cursor_limit: Optional[int] = None):
+        result = self.runner.execute_query(
+            query=query,
+            graph_compiler=self.graph_compiler,
+            cursor_limit=cursor_limit
+        )
         return result
 
     def vector_search_init(self):

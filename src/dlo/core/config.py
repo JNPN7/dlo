@@ -9,6 +9,7 @@ import yaml
 
 from dlo.common.exception import errors
 from dlo.common.schema import SchemaMixin
+from dlo.core.constants import DEFAULT_CURSOR_LIMIT
 
 # Configure module logger
 log = logging.getLogger(__name__)
@@ -63,6 +64,7 @@ class Project(SchemaMixin):
     memory: Optional[list[str]] = field(default=None)
     runtime_config: dict = field(default_factory=dict)
     vector_search: Optional[VectorSearchConfig] = field(default=None)
+    cursor_limit: int = field(default=DEFAULT_CURSOR_LIMIT)
 
     @cached_property
     def project_root_path(self):

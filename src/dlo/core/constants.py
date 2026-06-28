@@ -8,3 +8,5 @@ COMPILED_GRAPH_FIG_PATH_RUN = "dag_run.png"
 COMPILED_GRAPH_FIG_PATH_AGENTS = "dag_agents.png"
 
 LOG_FILE = "logs/dlo.log"
+
+DEFAULT_CURSOR_LIMIT = 100_000

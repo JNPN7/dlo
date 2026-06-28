@@ -3,6 +3,7 @@ from typing import Optional
 
 from dlo.adapters.model import NodeId, NodeMap, QueryResult
 from dlo.common.exception import errors
+from dlo.core.constants import DEFAULT_CURSOR_LIMIT
 from dlo.core.models.resources import Model
 
 
@@ -19,7 +20,8 @@ class Adapter(ABC):
     def execute(self, query: str): ...
 
     @abstractmethod
-    def query(self, query: str) -> QueryResult: ...
+    def query(self, query: str, cursor_limit: Optional[int] = DEFAULT_CURSOR_LIMIT) -> QueryResult:
+        ...
 
     @abstractmethod
     def _create_table(self, model: Model): ...

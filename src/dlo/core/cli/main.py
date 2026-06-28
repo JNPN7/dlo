@@ -3,6 +3,7 @@ import click
 import dlo.core.cli.decorators as d
 
 from dlo.core.compiler.runtime import Runtime
+from dlo.core.constants import DEFAULT_CURSOR_LIMIT
 
 
 @click.group(
@@ -94,6 +95,13 @@ def schedule(ctx: click.Context, *args, **kwargs):
 @d.profile
 @d.lifespan
 @d.cached_manifest
+@click.option(
+    "--cursor-limit",
+    type=int,
+    default=DEFAULT_CURSOR_LIMIT,
+    help=f"Add limit while fetching the data. Default value {DEFAULT_CURSOR_LIMIT}."
+         "Pass negative value if you want remove limit and get all data",
+)
 @click.argument("query")
 def execute_query(ctx: click.Context, *args, **kwargs):
     """Run query."""
@@ -104,13 +112,17 @@ def execute_query(ctx: click.Context, *args, **kwargs):
 
     query = kwargs.get("query")
 
+    cursor_limit = kwargs.get("cached_manifest") or project.cursor_limit
+    if cursor_limit < 0:
+        cursor_limit = None
+
     runtime = Runtime(project=project, profile=profile, manifest=manifest)
 
     # Compile if not cached
     if manifest is None:
         runtime.compile()
 
-    result = runtime.execute_query(query)
+    result = runtime.execute_query(query, cursor_limit)
     click.echo(result)
 
 

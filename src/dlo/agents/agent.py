@@ -2,6 +2,8 @@
 Agent
 """
 
+import logging
+
 from functools import cached_property
 from typing import Callable
 
@@ -17,6 +19,8 @@ from dlo.core.compiler.graph import Graph
 from dlo.core.config import Profile, Project
 from dlo.core.constants import COMPILED_GRAPH_FIG_PATH_AGENTS
 from dlo.core.models.agent import Agent, AgentManifest, AgentMode
+
+log = logging.getLogger("__name__")
 
 
 def get_weather(location: str):
@@ -37,6 +41,14 @@ class AgentCompiler:
         self.project = project
         self.compiled_agents = {}
         self.checkpointer = checkpointer
+
+        self.register_users_tools()
+
+    def register_users_tools(self):
+        tools_dir = self.agent_manifest.root_dir / "tools"
+
+        if tools_dir.exists():
+            ToolRegistry.discover_and_register_from_dir(tools_dir)
 
     @cached_property
     def graph(self) -> Graph:
