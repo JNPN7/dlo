@@ -152,6 +152,7 @@ class AgentCompiler:
                 model=model,
                 system_prompt=agent.prompt,
                 tools=self.get_tools(agent),
+                checkpointer=self.checkpointer,
             )
 
             return custom_graph
