@@ -21,6 +21,11 @@ class AgentMode(EnumBase):
     subagent = auto()
 
 
+class AgentType(EnumBase):
+    deepagent = auto()
+    standard = auto()
+
+
 @dataclass
 class Agent(SchemaMixin):
     name: str = field()
@@ -28,6 +33,7 @@ class Agent(SchemaMixin):
     mode: AgentMode = field()
     model: str = field()
     prompt: str = field()
+    agent_type: Optional[AgentType] = field(default=None)
     temperature: Optional[float] = field(default=None)
     permissions: list[FilesystemPermission] = field(default_factory=list)
     subagents: list[str] = field(default_factory=list)
@@ -42,6 +48,11 @@ class Agent(SchemaMixin):
             self.skills = [
                 (Path(self.base_dir) / Path(s)).as_posix() + "/" for s in self.skills
             ]
+        if self.agent_type is None:
+            if self.subagents or self.permissions:
+                self.agent_type = AgentType.deepagent
+            else:
+                self.agent_type = AgentType.standard
 
 
 @dataclass

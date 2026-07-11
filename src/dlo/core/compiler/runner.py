@@ -12,7 +12,7 @@ from dlo.common.exception import errors
 from dlo.core.compiler.compiler import GraphCompiler
 from dlo.core.compiler.graph import Graph
 from dlo.core.config import Project
-from dlo.core.constants import COMPILED_GRAPH_FIG_PATH_RUN
+from dlo.core.constants import COMPILED_GRAPH_FIG_PATH_RUN, DEFAULT_CURSOR_LIMIT
 from dlo.core.models.graph import NodeId
 from dlo.core.models.manifest import Manifest
 from dlo.core.models.resources import InjectedCTE, Model, ModelType
@@ -183,7 +183,10 @@ class Runner:
         return compiled_code
 
     def execute_query(
-        self, query: str, graph_compiler: GraphCompiler, cursor_limit: Optional[int] = None
+        self,
+        query: str,
+        graph_compiler: GraphCompiler,
+        cursor_limit: Optional[int] = DEFAULT_CURSOR_LIMIT,
     ):
         log.info("Compiling the query")
         compiled_code = self.compile_query(query=query, graph_compiler=graph_compiler)

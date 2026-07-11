@@ -1,9 +1,9 @@
 "use client";
 
+import { z } from "zod";
 import { useState, useEffect } from "react";
 import { Bot, ChevronDown, MessageSquareOff } from "lucide-react";
-import { useDefaultRenderTool } from "@copilotkit/react-core/v2";
-import { CopilotChat, useAgent } from "@copilotkit/react-core/v2";
+import { CopilotChat, useAgent, useRenderTool, useConfigureSuggestions } from "@copilotkit/react-core/v2";
 import { cn } from "@/lib/utils";
 import { Header } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import {
   FloatingPanelButton,
   type TodoItem,
 } from "@/components/agents/side-panel";
+import { ChartContainer } from '@/components/charts';
 
 // FIXME: The agent switch is not working fine, the histroy is getting messed up
 // and when switching the agent the it starts with new chat
@@ -130,6 +131,17 @@ function mapAgentTodos(todos: any[]): TodoItem[] {
   }));
 }
 
+function WelcomeSuggestions() {
+  useConfigureSuggestions({
+    suggestions: [
+      { title: "Get started chart", message: "Create me a bar chart based on SELECT id as patient_id, COUNT(*) as encounter_count FROM patient_encounters_view GROUP BY id ORDER BY encounter_count DESC LIMIT 10; query use sementic layer sub agent" },
+    ],
+    available: "before-first-message",
+  });
+
+  return null;
+}
+
 function AgentChatInstance({ agentId, isActive }: AgentChatInstanceProps) {
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
 
@@ -140,17 +152,21 @@ function AgentChatInstance({ agentId, isActive }: AgentChatInstanceProps) {
   const rawTodos = agent.state?.todos || [];
   const todos = mapAgentTodos(rawTodos);
 
-  useDefaultRenderTool({
-    render: ({ name, status, result }) => (
-      <details>
-        <summary>
-          {status === "complete" ? `Called ${name}` : `Calling ${name}`}
-        </summary>
-        <p>Status: {status}</p>
-        <p>Result: {JSON.stringify(result)}</p>
-      </details>
-    ),
-  });
+  useRenderTool(
+    {
+      name: "chart_generation",
+      parameters: z.object({ query: z.string(), option: z.object() }),
+      render: ({ name, parameters, status, result }) => {
+        if (status === "inProgress") return <div>Preparing {name}…</div>;
+        if (status === "executing")
+          return <div>Searching for: {parameters.query}</div>;
+        return <ChartContainer chartConfig={JSON.parse(result)} isLoading={false} />
+      },
+    },
+    [],
+  );
+
+  WelcomeSuggestions()
 
   return (
     <div
