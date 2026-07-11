@@ -278,6 +278,7 @@ class RegisterApp:
                     config={
                         "callbacks": callbacks,
                         "recursion_limit": agent.recursion_limit,
+                        "emit_tool_calls": True,
                     },
                 ),
                 path=f"/api/agents/{agent.name}",

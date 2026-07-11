@@ -23,7 +23,7 @@ def execute_query(query: str) -> QueryResult:
     """Exeucte query and return data"""
     manifest: Manifest = current_manifest.get()
     if manifest is None:
-        return "Manifest is not loaded"
+        raise ToolException("Manifest is not loaded")
     project: Project = current_project.get()
     profile: Profile = current_profile.get()
     try:

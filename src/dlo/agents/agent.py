@@ -18,7 +18,7 @@ from dlo.common.exception import errors
 from dlo.core.compiler.graph import Graph
 from dlo.core.config import Profile, Project
 from dlo.core.constants import COMPILED_GRAPH_FIG_PATH_AGENTS
-from dlo.core.models.agent import Agent, AgentManifest, AgentMode
+from dlo.core.models.agent import Agent, AgentManifest, AgentMode, AgentType
 
 log = logging.getLogger("__name__")
 
@@ -111,7 +111,7 @@ class AgentCompiler:
         return [ToolRegistry.get(tool) for tool in tools]
 
     async def create_agent(self, agent: Agent):
-        async def create_primary(agent: Agent):
+        async def _create_deep_agent(agent: Agent):
             # path = Path(f"checkpoint/{agent.name}/checkpoint.sqlite")
             # path.parent.mkdir(exist_ok=True)
             # checkpointer_context = AsyncSqliteSaver.from_conn_string(
@@ -121,13 +121,24 @@ class AgentCompiler:
 
             model = self.get_model(agent)
 
+            subagents = []
+            for subagent in agent.subagents:
+                subagent_manifest = self.agent_manifest.agents[subagent]
+                subagents.append(
+                    CompiledSubAgent(
+                        name=subagent_manifest.name,
+                        description=subagent_manifest.description,
+                        runnable=self.compiled_agents[subagent]
+                    )
+                )
+
             return create_deep_agent(
                 model=model,
                 middleware=[CopilotKitMiddleware()],  # for frontend tools and context
                 system_prompt=agent.prompt,
                 tools=self.get_tools(agent),
                 checkpointer=self.checkpointer,
-                subagents=[self.compiled_agents[sub] for sub in agent.subagents],
+                subagents=subagents,
                 permissions=agent.permissions,
                 backend=FilesystemBackend(
                     root_dir=self.project.project_root_path, virtual_mode=True
@@ -135,31 +146,24 @@ class AgentCompiler:
                 skills=agent.skills,
             )
 
-        async def create_subagent(agent: Agent):
-            if agent.subagents or agent.permissions:
-                custom_graph = await create_primary(agent)
-            else:
-                model = self.get_model(agent)
-                custom_graph = create_agent(
-                    model=model,
-                    system_prompt=agent.prompt,
-                    tools=self.get_tools(agent),
-                )
-
-            # Use it as a custom subagent
-            return CompiledSubAgent(
-                name=agent.name,
-                description=agent.description,
-                runnable=custom_graph
+        async def _create_standard_agent(agent: Agent):
+            model = self.get_model(agent)
+            custom_graph = create_agent(
+                model=model,
+                system_prompt=agent.prompt,
+                tools=self.get_tools(agent),
             )
+
+            return custom_graph
 
         # Agent factory
         agent_map: dict[AgentMode, Callable] = {
-            AgentMode.primary: create_primary,
-            AgentMode.subagent: create_subagent,
+            AgentType.deepagent: _create_deep_agent,
+            AgentType.standard: _create_standard_agent,
+            None: _create_standard_agent,
         }
 
-        return await agent_map[agent.mode](agent)
+        return await agent_map[agent.agent_type](agent)
 
     async def compile_agent(self, agent_name: str) -> None:
         agent = self.agent_manifest.agents[agent_name]
