@@ -160,7 +160,7 @@ function AgentChatInstance({ agentId, isActive }: AgentChatInstanceProps) {
         if (status === "inProgress") return <div>Preparing {name}…</div>;
         if (status === "executing")
           return <div>Searching for: {parameters.query}</div>;
-        return <ChartContainer chartConfig={JSON.parse(result)} isLoading={false} />
+        return <div className="h-64"><ChartContainer chartConfig={JSON.parse(result)} isLoading={false} /></div>
       },
     },
     [],

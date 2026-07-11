@@ -48,10 +48,7 @@ class PostgresConfig(SchemaMixin):
             )
 
         if not has_url:
-            missing = [
-                f for f in self.PARAM_FIELDS
-                if values[f] is None
-            ]
+            missing = [f for f in self.PARAM_FIELDS if values[f] is None]
             if missing:
                 raise ValueError(
                     f"When 'url' is not provided, missing required fields: {', '.join(sorted(missing))}"  # noqa: E501
@@ -60,7 +57,8 @@ class PostgresConfig(SchemaMixin):
     @property
     def config(self) -> dict:
         return {
-            field: value for field in self.PARAM_FIELDS
+            field: value
+            for field in self.PARAM_FIELDS
             if (value := getattr(self, field)) is not None
         }
 
@@ -158,7 +156,9 @@ class PostgresAdapter(Adapter):
                 except Exception as e:
                     log.error(
                         "Model: `%s` uuid: `%s`. Got error while creation: `%s`",
-                        model.name, model.unique_id, e
+                        model.name,
+                        model.unique_id,
+                        e,
                     )
                     cursor.execute("ROLLBACK")
 

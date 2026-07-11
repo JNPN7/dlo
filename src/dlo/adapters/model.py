@@ -27,13 +27,7 @@ class QueryResult(SchemaMixin):
     rows: list[tuple]
 
     def to_records(self) -> list[dict]:
-        return [
-            dict(zip(self.columns, row))
-            for row in self.rows
-        ]
+        return [dict(zip(self.columns, row)) for row in self.rows]
 
     def to_list(self) -> dict[str, list]:
-        return {
-            col: list(values)
-            for col, values in zip(self.columns, zip(*self.rows))
-        }
+        return {col: list(values) for col, values in zip(self.columns, zip(*self.rows))}

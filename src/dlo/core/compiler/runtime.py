@@ -60,9 +60,7 @@ class Runtime:
     # TODO: Add Cache if enabled
     def execute_query(self, query: str, cursor_limit: Optional[int] = DEFAULT_CURSOR_LIMIT):
         result = self.runner.execute_query(
-            query=query,
-            graph_compiler=self.graph_compiler,
-            cursor_limit=cursor_limit
+            query=query, graph_compiler=self.graph_compiler, cursor_limit=cursor_limit
         )
         return result
 

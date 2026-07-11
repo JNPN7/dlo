@@ -79,6 +79,7 @@ class BaseResource(SchemaMixin):
         # This will remove any fields that are None
         omit_none = True
 
+
 # =========================
 # Model Mixins
 # =========================
@@ -302,6 +303,7 @@ class Chart(BaseResource):
                     raise errors.DloCompilationError(
                         f"'{field_name}' must be provided when data_source='{typ.value}'"
                     )
+
 
 # =========================
 # Dashboards

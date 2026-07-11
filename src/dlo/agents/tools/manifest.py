@@ -44,9 +44,8 @@ def get_schema(table_name: str):
     manifest: Manifest = get_manifest()
 
     # Given the fact that the key of the source and model is the table name itself
-    table: Optional[Source | Model] = (
-        manifest.sources.get(table_name)
-        or manifest.models.get(table_name)
+    table: Optional[Source | Model] = manifest.sources.get(table_name) or manifest.models.get(
+        table_name
     )
 
     if table is None:
@@ -58,28 +57,22 @@ def get_schema(table_name: str):
             "Table schema not found. Please run upstream first, meanwhile get schema from query"
         )
 
-    columns = ",\n".join(
-        [
-            f"{col.name} {col.type} --> {col.category} --> {col.description}"
-            for col in table.columns
-        ]
-    )
+    columns = ",\n".join([
+        f"{col.name} {col.type} --> {col.category} --> {col.description}" for col in table.columns
+    ])
     create_statement = f"""CREATE TABLE {table.name} (
         {columns}
     )"""
     return create_statement
 
 
-def select_table():
-    ...
+def select_table(): ...
 
 
-def targeted_entity_search():
-    ...
+def targeted_entity_search(): ...
 
 
-def fewshot_fetcher():
-    ...
+def fewshot_fetcher(): ...
 
 
 # Send error message to the llm instead of crashing

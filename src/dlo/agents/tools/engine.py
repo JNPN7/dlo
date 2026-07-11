@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 class ExecuteQueryArgs(BaseModel):
     """Input for execute query."""
+
     query: str = Field(description="Query to be executed")
 
 

@@ -45,9 +45,7 @@ class Agent(SchemaMixin):
 
     def __post_init__(self):
         if self.base_dir and self.skills:
-            self.skills = [
-                (Path(self.base_dir) / Path(s)).as_posix() + "/" for s in self.skills
-            ]
+            self.skills = [(Path(self.base_dir) / Path(s)).as_posix() + "/" for s in self.skills]
         if self.agent_type is None:
             if self.subagents or self.permissions:
                 self.agent_type = AgentType.deepagent
