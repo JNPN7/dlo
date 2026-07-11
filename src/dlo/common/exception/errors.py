@@ -107,6 +107,7 @@ class NotFoundError(DloError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+
 # ============================================================
 # DLO Server Errors (Reserved Range: -32000 to -32099)
 # ============================================================
@@ -121,6 +122,7 @@ class DloServerError(DloError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+
 # ---------------- Parse / Validation ----------------
 
 
@@ -132,6 +134,7 @@ class DloParseError(ParseError):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
 
 # ---------------- Runtime / Execution ----------------
 
@@ -165,6 +168,7 @@ class DloRecursionLimitError(DloRuntimeError):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+
 # ---------------- Configuration / Features ----------------
 
 
@@ -186,6 +190,7 @@ class DloFeatureNotImplementedError(DloServerError):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
 
 # ============================================================
 # Helper

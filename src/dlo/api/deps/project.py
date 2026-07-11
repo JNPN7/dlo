@@ -49,5 +49,3 @@ def get_runner(project: CProject, profile: CProfile, manifest: CManifest):
 
 # Annotated Current Manifest
 CRuntime = Annotated[Runtime, Depends(get_runner)]
-
-

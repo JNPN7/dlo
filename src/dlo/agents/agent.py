@@ -68,20 +68,19 @@ class AgentCompiler:
             if subagent not in agents_name
         ]
         if missing:
-            details = ', '.join(f"`{sub}` (in `{agent}`)" for agent, sub in missing)
+            details = ", ".join(f"`{sub}` (in `{agent}`)" for agent, sub in missing)
             raise errors.DloParseError(f"Subagents not found: {details}")
 
         graph.add_edges_from(
-            (subagent, agent.name)
-            for agent in agents
-            for subagent in agent.subagents
+            (subagent, agent.name) for agent in agents for subagent in agent.subagents
         )
         return graph
 
     @cached_property
     def primary_agents(self) -> list[str]:
         return [
-            agent.name for agent in self.agent_manifest.agents.values()
+            agent.name
+            for agent in self.agent_manifest.agents.values()
             if agent.mode == AgentMode.primary
         ]
 
@@ -128,7 +127,7 @@ class AgentCompiler:
                     CompiledSubAgent(
                         name=subagent_manifest.name,
                         description=subagent_manifest.description,
-                        runnable=self.compiled_agents[subagent]
+                        runnable=self.compiled_agents[subagent],
                     )
                 )
 

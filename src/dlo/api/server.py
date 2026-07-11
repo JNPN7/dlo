@@ -87,14 +87,13 @@ class RegisterApp:
             path = Path("checkpoint/checkpoint.sqlite")
             path.parent.mkdir(exist_ok=True)
 
-            self.checkpointer_context = AsyncSqliteSaver.from_conn_string(
-                path
-            )
+            self.checkpointer_context = AsyncSqliteSaver.from_conn_string(path)
             self.checkpointer = await self.checkpointer_context.__aenter__()
 
             # Reqired here as we need to register agents after intializing the checkpointer
             await self.register_agent()
         else:
+
             @self.app.get("/api/agents")
             async def list_agents():
                 return []
@@ -232,6 +231,7 @@ class RegisterApp:
         if langfuse_secret_key is not None:
             from langfuse import Langfuse
             from langfuse.langchain import CallbackHandler
+
             Langfuse(
                 secret_key=langfuse_secret_key,
                 public_key=langfuse_public_key,

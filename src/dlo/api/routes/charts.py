@@ -62,9 +62,7 @@ async def get_chart_option(runtime: CRuntime, chart_uid: str) -> dict[str, Any]:
     chart = manifest.charts.get(chart_uid)
 
     if chart is None:
-        raise errors.NotFoundError(
-            f"Chart `{chart_uid}` not found."
-        )
+        raise errors.NotFoundError(f"Chart `{chart_uid}` not found.")
 
     chart_option = chart.option
 

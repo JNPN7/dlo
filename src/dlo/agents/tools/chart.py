@@ -39,15 +39,17 @@ def inject_data(
         for item in obj:
             inject_data(item, data_map, lookup, target)
 
+
 ###########################################################
 
 
 class ExecuteQueryArgs(BaseModel):
     """Input for execute query."""
+
     query: str = Field(description="Query of the chart")
     echarts_option: str = Field(
         description="Options for the chart to be displayed."
-                    "Here data is replaced by key of the query"
+        "Here data is replaced by key of the query"
     )
 
 

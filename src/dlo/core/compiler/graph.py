@@ -99,7 +99,7 @@ class Graph:
 
         node_color = []
         for node in self.graph.nodes:
-            if (node_detail := nodes.get(node)):
+            if node_detail := nodes.get(node):
                 node_type = get_node_type(node_detail)
                 node_color.append(NODE_COLOR_MAP.get(node_type, "#cccccc"))
             else:

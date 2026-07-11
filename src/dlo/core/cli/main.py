@@ -100,7 +100,7 @@ def schedule(ctx: click.Context, *args, **kwargs):
     type=int,
     default=DEFAULT_CURSOR_LIMIT,
     help=f"Add limit while fetching the data. Default value {DEFAULT_CURSOR_LIMIT}."
-         "Pass negative value if you want remove limit and get all data",
+    "Pass negative value if you want remove limit and get all data",
 )
 @click.argument("query")
 def execute_query(ctx: click.Context, *args, **kwargs):
@@ -207,12 +207,14 @@ def serve(ctx: click.Context, *args, **kwargs):
 
     # Create app with appropriate mode
     from dlo.api import RegisterApp
+
     runtime = Runtime(project=project, profile=profile)
 
     try:
         agent_manifest = runtime.agent_manifest
     except Exception as e:
         import traceback
+
         click.echo(f"Unable to read agent manifest: {e}")
         click.echo(f"Detail: {traceback.format_exc()}")
         agent_manifest = None
