@@ -1,8 +1,9 @@
 import logging
 
 from dataclasses import dataclass, field
+from functools import cached_property
 from pathlib import Path
-from typing import Any, Mapping, Optional
+from typing import Any, ClassVar, Mapping, Optional
 
 from databricks import sql
 from databricks.sdk import WorkspaceClient
@@ -68,7 +69,7 @@ class DatabricksRuntimeConfig(RuntimeConfig):
 
 
 class DatabricksAdapter(Adapter):
-    MODEL_TYPE_TO_TABLE_TYPE = {
+    MODEL_TYPE_TO_TABLE_TYPE: ClassVar[dict[ModelType, str]] = {
         ModelType.materialized: "TABLE",
         ModelType.view: "VIEW",
     }
@@ -86,15 +87,11 @@ class DatabricksAdapter(Adapter):
         self.config = DatabricksConfig.from_any(config)
         self.runtime_config = DatabricksRuntimeConfig.from_any(runtime_config)
 
-        self._client = None
-
-    @property
+    @cached_property
     def client(self) -> WorkspaceClient:
         """Get the underlying WorkspaceClient."""
-        if self._client is None:
-            log.debug("Initializing WorkspaceClient with provided config")
-            self._client = WorkspaceClient(**self.config.config)
-        return self._client
+        log.debug("Initializing WorkspaceClient with provided config")
+        return WorkspaceClient(**self.config.config)
 
     # HACK: The job update was not avalabe in sdk
     def job_update(

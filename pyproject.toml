@@ -40,6 +40,9 @@ databricks = [
     "databricks-sdk>=0.94.0",
     "databricks-sql-connector>=4.2.3",
 ]
+postgres = [
+    "psycopg2-binary>=2.9.12",
+]
 vector_store = [
     "faiss-cpu>=1.13.2",
     "fastembed>=0.8.0",
